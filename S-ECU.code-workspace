@@ -1,7 +1,8 @@
 {
 	"folders": [
 		{
-			"path": "Firmware/Smart_ECU"
+			"name": "S-ECU",
+			"path": "."
 		}
 	],
 	"settings": {}
