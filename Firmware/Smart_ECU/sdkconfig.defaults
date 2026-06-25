@@ -1,2 +1,8 @@
 CONFIG_HTTPD_WS_SUPPORT=y
 CONFIG_LWIP_MAX_SOCKETS=16
+
+# 16 MB flash (WROOM N16) + custom partition table — the embedded gzipped UI
+# pushes the app past the default 1 MB factory partition.
+CONFIG_ESPTOOLPY_FLASHSIZE_16MB=y
+CONFIG_PARTITION_TABLE_CUSTOM=y
+CONFIG_PARTITION_TABLE_CUSTOM_FILENAME="partitions.csv"

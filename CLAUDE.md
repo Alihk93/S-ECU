@@ -45,16 +45,30 @@ Frontend build: in `dashboard-ui/`, `node_modules/.bin/vite build` → `bundle.h
 directly). Then copy `bundle.html` → `Firmware/Smart_ECU/main/web/index.html` and gzip.
 
 ## Build / flash / run
+**Env activation (IMPORTANT):** the system `python3` is 3.14 but the IDF tools venv is
+Python 3.13, so `export.sh` must run with 3.13 on PATH first or it fails ("virtual
+environment not found"):
+```bash
+export PATH=/home/ali/.pyenv/versions/3.13.4/bin:$PATH
+export IDF_TOOLS_PATH=/home/ali/ESP_IDF/Version_5.5.2/IDF_Tool_v5.5.2
+export IDF_PATH=/home/ali/ESP_IDF/Version_5.5.2/IDF_v5.5.2/v5.5.2/esp-idf
+. "$IDF_PATH/export.sh"        # never pipe this — a pipe loses the PATH changes
+```
 ```bash
 # one-time
 idf.py set-target esp32s3
 
 # every build — gzip the UI first; main.c embeds index.html.gz
 gzip -kf -9 main/web/index.html
-idf.py build flash monitor
+idf.py -p /dev/ttyUSB0 build flash monitor   # board enumerates as /dev/ttyUSB0 (or ttyACM0)
 ```
 Then join Wi-Fi **`S-ECU`** (pass `0000` — under 8 chars so the AP comes up **OPEN**;
 WPA2-PSK needs ≥8) and open **`http://10.10.10.10`**.
+
+**Flash layout:** the app binary is ~1.15 MB (it embeds the gzipped UI), which overflows the
+default 1 MB factory partition. `partitions.csv` gives a 3 MB factory app on the 16 MB (N16)
+flash; `sdkconfig.defaults` sets `CONFIG_ESPTOOLPY_FLASHSIZE_16MB` +
+`CONFIG_PARTITION_TABLE_CUSTOM`. Build/flash/boot are **verified on hardware** (2026-06-25).
 
 `main/CMakeLists.txt`:
 ```cmake
@@ -68,7 +82,11 @@ idf_component_register(
 ```
 CONFIG_HTTPD_WS_SUPPORT=y
 CONFIG_LWIP_MAX_SOCKETS=16
+CONFIG_ESPTOOLPY_FLASHSIZE_16MB=y
+CONFIG_PARTITION_TABLE_CUSTOM=y
+CONFIG_PARTITION_TABLE_CUSTOM_FILENAME="partitions.csv"
 ```
+(after editing `sdkconfig.defaults`, delete the generated `sdkconfig` so it regenerates).
 
 ## Hardware
 | Signal | GPIO | Notes |
@@ -153,11 +171,15 @@ per-channel coil/injector sensing.
   `dashboard-ui/` React dashboard (gauges, voltages, 8 coils/8 injectors, CKP/CMP scope,
   12 status, sim console, debug panel), `protocol.ts` + `useEcuLink` WS client + live override,
   `CMakeLists.txt` / `sdkconfig.defaults`, UI embedded as `index.html.gz`.
-- **NOT VERIFIED:** firmware not yet compiled in this env (no IDF here) — needs `idf.py build`;
-  hardware wiring + bench test pending.
+- **VERIFIED (2026-06-25):** firmware builds, flashes, and boots on real ESP32-S3 (N16 R8).
+  Boot log: `SoftAP up: SSID 'S-ECU' (open) -> http://10.10.10.10`, DHCP server up,
+  backend running. App 1.15 MB in the 3 MB factory partition (63% free).
+- **NOT YET TESTED:** browser connect to the live page, multi-client broadcast, gauge latency,
+  pot→load mapping, button behaviour, every status bit — hardware wiring + bench test pending.
 
 ## Punchlist
-1. `idf.py set-target esp32s3 && idf.py build` — fix any compile issues in the new `main.c` model.
+1. [DONE] `idf.py build flash` verified on hardware — `main.c` ECU model compiles clean;
+   added `partitions.csv` (3 MB app) + 16 MB flash config so the UI-embedded binary fits.
 2. Wire hardware (pinout above); confirm pot maps cleanly to 0–100 % load.
 3. Bench test: SoftAP, multi-client broadcast, **Live badge** on connect, gauge latency,
    reconnect/sim-fallback, cam ADVANCE/FAULT via buttons, every status bit toggling correctly.

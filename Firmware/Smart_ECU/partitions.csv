@@ -1,0 +1,7 @@
+# ESP32-S3 WROOM N16 (16 MB flash) — single large app + nvs/phy.
+# App binary is ~1.15 MB (embeds the gzipped UI), so the default 1 MB factory
+# partition overflows; give it 3 MB with room to grow.
+# Name,     Type, SubType, Offset,   Size
+nvs,        data, nvs,     0x9000,   0x6000,
+phy_init,   data, phy,     0xf000,   0x1000,
+factory,    app,  factory, 0x10000,  0x300000,
