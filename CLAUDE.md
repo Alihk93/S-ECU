@@ -174,8 +174,12 @@ per-channel coil/injector sensing.
 - **VERIFIED (2026-06-25):** firmware builds, flashes, and boots on real ESP32-S3 (N16 R8).
   Boot log: `SoftAP up: SSID 'S-ECU' (open) -> http://10.10.10.10`, DHCP server up,
   backend running. App 1.15 MB in the 3 MB factory partition (63% free).
-- **NOT YET TESTED:** browser connect to the live page, multi-client broadcast, gauge latency,
-  pot→load mapping, button behaviour, every status bit — hardware wiring + bench test pending.
+- **VERIFIED (2026-06-25):** browser connects over SoftAP, page serves, WebSocket handshake
+  succeeds (`WS client connected`), live telemetry streams → dashboard shows "Live · ESP".
+  (Benign log noise: OS captive-portal probe resets one early `/` fetch → `error in send :104`;
+  browser `/favicon.ico` → 404.)
+- **NOT YET TESTED:** multi-client broadcast, gauge latency under load, pot→load mapping,
+  button behaviour (run gate / cam advance / cam fault), every status bit — bench test pending.
 
 ## Punchlist
 1. [DONE] `idf.py build flash` verified on hardware — `main.c` ECU model compiles clean;
