@@ -1,0 +1,295 @@
+
+
+The dashboard will be connected to an ESP32-S3  controller that acquires approx. 50 sensors data and ECU signals in real time.
+
+This is a local web application
+
+The dashboard must be developed using a single or multiple Monitor and optimized for embedded environments running on IDF version 5.5.2
+
+The connection will be AP username S-ECU and the password 0000 , the IP 10.10.10.10 display and must boot automatically into the dashboard.
+
+---
+Mandatory Technical Requirements
+Software Stack:
+* C/C++
+* ESP32-S3 
+* Serial communication via UART (between 
+
+The application must:
+
+* Run fullscreen
+* Run without a desktop environment
+* Launch automatically on boot
+* Output to any device
+* Operate as a professional frontend local website.
+---
+
+System Architecture Requirements
+
+The application must be designed using a modular component architecture.
+
+Examples:
+
+* Gauge.qml
+* VoltageMeter.qml
+* Indicator.qml
+* WaveformView.qml
+* InjectorAnimation.qml
+* CoilIndicator.qml
+
+Requirements:
+
+* Components must be reusable.
+* New gauges must be easily added.
+* New indicators must be easily added.
+* Layout changes should require minimal code modifications.
+* Future expansion should not require redesigning the UI.
+
+---
+
+Communication Protocol
+
+Mandatory
+- The system must use light payload like (json or similar)
+
+Avoid:
+* Higher CPU usage
+* Slower parsing
+* Fragile communication
+* Poor scalability
+
+Required approach:
+* Packed binary data structure
+* Fixed packet format
+* CRC validation
+* Packet synchronization
+* Error detection
+
+The protocol must be fully documented.
+---
+
+ESP32-S3 Firmware
+
+Firmware responsibilities:
+Analog Inputs
+* MAF
+* MAP
+* IAT
+* ECU Voltage
+* Sensor Voltage
+
+Digital Signals
+* 8 Ignition Coil Channels
+* 8 Injector Channels
+* Battery
+* Switch
+* Start Switch Button
+* ETC
+* Fan 1
+* Fan 2
+* Fuel Pump
+* IMMO+
+* IMMO-
+* MRC+
+* MRC-
+* IAC Stepper Signals
+
+Signal Processing
+* CKP acquisition
+* CMP1 acquisition
+* CMP2 acquisition
+
+Requirements
+* Timer interrupt architecture
+* Waveform buffering
+* Extensible code structure
+* Well-documented source code
+
+Preferred implementation:
+* Timer1 ISR
+* 10 kHz acquisition rate minimum
+
+However, I am open to suggestions that result in the betterment of the final prototype.
+
+---
+
+Dashboard Features
+
+Analog Gauges
+
+Animated circular gauges:
+
+* MAF
+* MAP
+* IAT
+
+Voltage Displays
+Digital voltage meters:
+* ECU Voltage (0–25V)
+* Sensor Voltage (0–5V)
+
+Ignition Coils
+* 8 coil indicators
+* Positive state visualization
+* Negative state visualization
+* Firing animation
+
+Injectors
+* 8 injector indicators
+* Animated spray effect
+
+Digital Status Indicators
+* Battery
+* Switch
+* Start
+* ETC
+* Fan 1
+* Fan 2
+* Fuel Pump
+* IMMO+
+* IMMO-
+* MRC+
+* MRC-
+* IAC signals
+
+Waveform Oscilloscope:
+Display real-time scrolling waveforms for:
+* CKP
+* CMP1
+* CMP2
+
+The waveform display is a mandatory feature.
+Simple blinking LEDs are not acceptable.
+The oscilloscope should allow visualization of:
+
+* Missing tooth patterns
+* Cam synchronization
+* Timing relationships
+* Signal integrity
+
+And I am open to suggestions here too!
+
+---
+
+## Simulation Mode
+A complete simulation mode is required.
+The dashboard must operate without hardware connected.
+Simulation mode should generate realistic values for:
+
+* Gauges
+* Voltage readings
+* Coil activity
+* Injector activity
+* CKP waveform
+* CMP waveform
+* Status indicators
+
+Purpose:
+* Demonstrations
+* Development
+* Testing
+* Troubleshooting
+
+---
+
+Functions:
+
+Analog Controls
+
+Manual sliders for:
+
+* MAF
+* MAP
+* IAT
+* ECU Voltage
+* Sensor Voltage
+
+Digital Controls
+
+Manual toggles for:
+
+* Coils
+* Injectors
+* Battery
+* Switch
+* Fuel Pump
+* IMMO
+* MRC
+* IAC
+* Fan outputs
+
+### Waveform Controls
+
+Ability to:
+
+* Simulate RPM
+* Simulate CKP
+* Simulate CMP
+
+This feature will be heavily used during development and validation.
+
+---
+
+## IDF Deployment
+
+Developer must provide:
+
+* systemd service
+* automatic startup
+* watchdog-safe startup sequence
+
+Performance Optimization
+
+Target hardware:
+
+* ESP32-S3 WROOM N16 R8
+
+The dashboard must maintain smooth operation and responsiveness on this platform.
+
+---
+
+Deliverables
+
+Source Code
+
+Complete source code including:
+* IDF v5.5.1 firmware
+
+Executables
+
+* Ready-to-run deployment package
+
+Simulation Mode
+
+Fully operational simulation mode
+
+### Debug Panel
+
+Integrated debug interface
+
+### Deployment Scripts
+
+* Installation scripts
+* Startup scripts
+* systemd configuration
+
+### Documentation
+
+Comprehensive documentation including:
+
+1. System Setup Guide
+2. Communication Protocol Specification
+3. Dashboard Architecture Guide
+4. Adding New Sensors and Components Guide
+5. Simulation Mode Guide
+
+
+---
+
+## Required Experience
+
+Applicants should demonstrate experience with:
+
+* Real-time serial communications
+* Automotive or industrial systems
+* GPU-accelerated embedded UI development

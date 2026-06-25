@@ -2,23 +2,27 @@
  *  S-ECU  ::  Smart ECU Tester
  *  ESP32-S3 firmware backend  —  ESP-IDF v5.5.x
  *
- *  Pipeline:  1x potentiometer (throttle) + 3x push-buttons
+ *  Pipeline:  1x potentiometer (throttle/load) + 3x push-buttons
  *      -> FreeRTOS input task (ADC oneshot + boxcar averaging, debounced GPIO ISR)
- *      -> derived gauge model (RPM / fuel / temp)
+ *      -> ECU signal model (rpm rev model + analog/voltage/IAC/status channels)
  *      -> length-1 state queue (xQueueOverwrite => lock-free "always latest")
- *      -> telemetry task (30 Hz, change-detected minified JSON)
+ *      -> telemetry task (30 Hz, change-detected minified JSON, see protocol.ts)
  *      -> WebSocket broadcast to ALL connected SoftAP clients
  *
- *  ASSUMPTION: only the throttle is a physical input. RPM, fuel and temp are
- *  SIMULATED in firmware (see sim_rpm / sim_slow). To drive any of them from a
- *  real pot instead, add an ADC1 channel and replace that one assignment.
- *  NOTE: use ADC1 only — ADC2 is unusable while Wi-Fi is active.
+ *  ASSUMPTION: only the throttle pot is a physical input (it drives LOAD). rpm and
+ *  every analog/digital channel are MODELLED here (see model_status + input_task),
+ *  mirroring dashboard-ui/src/lib/sim.ts so the live stream matches the browser sim.
+ *  To drive any channel from real hardware, add an ADC1 channel / GPIO and replace
+ *  that one assignment.  NOTE: ADC1 only — ADC2 is unusable while Wi-Fi is active.
+ *  CKP/CMP waveforms and 8 coil/injector firings are derived browser-side from rpm
+ *  (+ cam mode cm/cp); they are intentionally NOT streamed.
  * ============================================================================= */
 
 #include <string.h>
 #include <stdio.h>
 #include <stdlib.h>
 #include <stdbool.h>
+#include <math.h>
 
 #include "freertos/FreeRTOS.h"
 #include "freertos/task.h"
@@ -35,8 +39,9 @@
 #include "esp_adc/adc_oneshot.h"
 
 /* ------------------------------ USER CONFIG ------------------------------- */
-#define WIFI_SSID            "S-ECU_Dashboard"
-#define WIFI_PASS            "ecu12345"        /* >= 8 chars, or "" for an open AP */
+#define WIFI_SSID            "S-ECU"
+#define WIFI_PASS            "0000"            /* WPA2 needs >= 8 chars; anything shorter -> OPEN AP */
+#define AP_IP_ADDR           "10.10.10.10"
 #define WIFI_CHANNEL         1
 #define MAX_CLIENTS          10                /* must match httpd max_open_sockets */
 
@@ -49,29 +54,40 @@
 #define BTN_CHECKENG_GPIO    7
 #define DEBOUNCE_US          50000             /* 50 ms */
 
-#define SPEED_MAX_KMH        200
+#define LOAD_MAX_PCT         100               /* pot maps to 0..100 % throttle/load */
 #define INPUT_PERIOD_MS      20                /* 50 Hz sensor loop */
 #define TELEMETRY_HZ         30
 #define TX_HEARTBEAT_US      500000            /* force a frame at least every 0.5 s */
 
-#define AMBIENT_C            35.0f
-#define HIGH_TEMP_C          110               /* high_temp warning icon threshold   */
-#define LOW_FUEL_PCT         15                /* low_fuel warning icon threshold     */
+#define RPM_IDLE             800
+#define RPM_MAX              6200
 
 static const char *TAG = "S-ECU";
 
 /* ---------------------------- SHARED STATE TYPE --------------------------- */
-/* Icon array order — the FRONTEND MUST MATCH THIS EXACTLY:
- * [0]=headlights [1]=check_engine [2]=battery [3]=high_temp [4]=low_fuel      */
-#define NUM_ICONS 5
+/* Wire contract — see dashboard-ui/src/lib/protocol.ts (THE source of truth).
+ * The 12-bit status mask bit order MUST match STATUS_BIT_ORDER there:
+ *  0 battery  1 switch  2 start  3 etc  4 fan1  5 fan2
+ *  6 fuelPump 7 immoP   8 immoN  9 mrcP 10 mrcN 11 iac                          */
 typedef struct {
-    int speed;       /* 0..200  km/h */
-    int rpm;         /* 0..7000      */
-    int fuel;        /* 0..100  %    */
-    int temp;        /* 0..130  C    */
-    int ignition;    /* 0/1          */
-    int icons[NUM_ICONS];
+    int rpm;         /* 0..7500            */
+    int load;        /* 0..100  %          */
+    int maf;         /* 0..400  g/s        */
+    int map;         /* 0..250  kPa        */
+    int iat;         /* deg C (may be < 0) */
+    int ev;          /* ECU volts  * 100   */
+    int sv;          /* sensor Vref * 100  */
+    int iac;         /* 0..200 stepper     */
+    int st;          /* 12-bit status mask */
+    int cm;          /* cam mode 0/1/2     */
+    int cp;          /* cam phase deg      */
 } dash_state_t;
+
+/* status mask bit positions (index == bit) */
+enum {
+    ST_BATTERY = 0, ST_SWITCH, ST_START, ST_ETC, ST_FAN1, ST_FAN2,
+    ST_FUELPUMP, ST_IMMOP, ST_IMMON, ST_MRCP, ST_MRCN, ST_IAC,
+};
 
 static QueueHandle_t  s_state_q = NULL;  /* length-1, xQueueOverwrite snapshot */
 static QueueHandle_t  s_btn_q   = NULL;  /* button index posted from ISR        */
@@ -128,45 +144,43 @@ static void adc_init(void)
 }
 
 /* burst-average a batch of raw samples -> smooths electrical noise w/o lag */
-static int adc_read_speed(void)
+static int adc_read_load(void)
 {
     int sum = 0, raw = 0;
     for (int i = 0; i < ADC_AVG_SAMPLES; i++)
         if (adc_oneshot_read(s_adc, POT_ADC_CHANNEL, &raw) == ESP_OK) sum += raw;
     int avg = sum / ADC_AVG_SAMPLES;                 /* 0..4095 */
-    return (avg * SPEED_MAX_KMH) / 4095;             /* 0..200  */
+    return (avg * LOAD_MAX_PCT) / 4095;              /* 0..100  */
 }
 
-/* ----------------------------- GAUGE SIM ---------------------------------- */
-/* One pot drives speed; everything below is modelled. Swap any line for a real
- * adc_read on another ADC1 channel if you wire more pots.                     */
-static float f_fuel = 100.0f;
-static float f_temp = AMBIENT_C;
+/* ----------------------------- ECU SIGNAL MODEL --------------------------- */
+/* The pot is the only real input: it drives LOAD. rpm and every analog/digital
+ * channel are MODELLED here so the dashboard's full signal set has live data.
+ * The math mirrors dashboard-ui/src/lib/sim.ts deriveAnalog() (sans noise) so the
+ * on-device "live" stream matches the browser simulation. Swap any line for a real
+ * adc_read on another ADC1 channel as hardware is wired in.                    */
+static float f_rpm = 0.0f;
+static float f_iac = 90.0f;
 
-static int sim_rpm(int speed, bool ign)
+static inline float clampf(float v, float lo, float hi)
 {
-    if (!ign)       return 0;
-    if (speed <= 0) return 800;                      /* idle */
-    static const int gear_top[] = {30, 55, 85, 120, 160, 200};
-    const int ngear = sizeof(gear_top) / sizeof(gear_top[0]);
-    int g = 0;
-    while (g < ngear - 1 && speed > gear_top[g]) g++;
-    int lo = g ? gear_top[g - 1] : 0;
-    float frac = (float)(speed - lo) / (float)(gear_top[g] - lo);
-    return 900 + (int)(frac * (6200 - 900));         /* sweeps, drops on shift */
+    return v < lo ? lo : (v > hi ? hi : v);
 }
 
-static void sim_slow(int rpm, bool ign, float dt)
+/* assemble the 12-bit digital status mask (bit order == protocol.ts) */
+static int model_status(bool run, int rpm, float load01, int iat)
 {
-    if (ign) {
-        f_fuel -= dt * (0.015f + rpm * 0.0000018f);  /* burns with engine load */
-        float target = 75.0f + (rpm / 6500.0f) * 45.0f;  /* up to ~120 at redline */
-        f_temp += (target - f_temp) * dt * 0.06f;    /* first-order warmup */
-    } else {
-        f_temp += (AMBIENT_C - f_temp) * dt * 0.02f; /* cools when off */
-    }
-    if (f_fuel < 0)   f_fuel = 0;
-    if (f_fuel > 100) f_fuel = 100;
+    int m = 0;
+    if (run)                        m |= (1 << ST_SWITCH) | (1 << ST_BATTERY) |
+                                         (1 << ST_FUELPUMP) | (1 << ST_IMMOP) | (1 << ST_IMMON);
+    if (run && rpm > 0 && rpm < 600) m |= (1 << ST_START);
+    if (load01 > 0.05f)              m |= (1 << ST_ETC);
+    if (iat > 70)                    m |= (1 << ST_FAN1);
+    if (iat > 84)                    m |= (1 << ST_FAN2);
+    if (run && rpm > 1500)           m |= (1 << ST_MRCP);
+    if (run && rpm > 3500)           m |= (1 << ST_MRCN);
+    if (run && rpm < 1300)           m |= (1 << ST_IAC);
+    return m;
 }
 
 /* ------------------------------ INPUT TASK -------------------------------- */
@@ -176,7 +190,8 @@ static void input_task(void *arg)
     const float dt = INPUT_PERIOD_MS / 1000.0f;
 
     while (1) {
-        /* 1. debounced buttons (ISR queued raw events; we filter bounce here) */
+        /* 1. debounced buttons (ISR queued raw events; we filter bounce here)
+         *    ignition = run gate · headlights = cam ADVANCE · check-eng = cam FAULT */
         uint32_t b;
         while (xQueueReceive(s_btn_q, &b, 0) == pdTRUE) {
             int64_t now = esp_timer_get_time();
@@ -189,24 +204,43 @@ static void input_task(void *arg)
             }
         }
 
-        /* 2. throttle -> speed (gated by ignition) -> derived gauges */
-        int speed = s_ignition ? adc_read_speed() : 0;
-        int rpm   = sim_rpm(speed, s_ignition);
-        sim_slow(rpm, s_ignition, dt);
+        /* 2. throttle pot -> load (gated by ignition) -> rpm rev model */
+        bool  run    = s_ignition;
+        int   load   = run ? adc_read_load() : 0;            /* 0..100 % */
+        float load01 = load / 100.0f;
+        int   target = run ? (RPM_IDLE + (int)(load01 * (RPM_MAX - RPM_IDLE))) : 0;
+        f_rpm += (target - f_rpm) * fminf(1.0f, dt * 3.0f);  /* first-order glide */
+        if (f_rpm < 1.0f) f_rpm = 0.0f;
+        int rpm = (int)(f_rpm + 0.5f);
 
-        /* 3. assemble snapshot + warning icons */
+        /* 3. derived analog channels (mirror dashboard sim.ts deriveAnalog) */
+        float t    = esp_timer_get_time() / 1000000.0f;      /* seconds */
+        float rpmN = clampf(rpm / 7000.0f, 0.0f, 1.0f);
+        int   map  = (int)clampf(28 + load01 * 175 + rpmN * 15,            0, 250);
+        int   maf  = (int)clampf(3 + rpmN * load01 * 360 + rpmN * 25,      0, 400);
+        int   iat  = (int)clampf(38 + 18 * sinf(t * 0.05f) + load01 * 14, -20, 120);
+        float ecuV = clampf(13.8f - load01 * 0.5f + 0.2f * sinf(t * 0.7f), 0, 25);
+        int   sv   = 500;                                    /* 5.00 V sensor Vref */
+
+        /* 4. IAC stepper + cam mode */
+        float iac_target = run ? (rpm < 1300 ? 150.0f : 40.0f) : 90.0f;
+        f_iac += (iac_target - f_iac) * fminf(1.0f, dt * 1.5f);
+        int cm = s_check_eng ? 2 : (s_headlights ? 1 : 0);   /* fault > advance > sync */
+
+        /* 5. assemble snapshot */
         dash_state_t st = {
-            .speed    = speed,
-            .rpm      = rpm,
-            .fuel     = (int)(f_fuel + 0.5f),
-            .temp     = (int)(f_temp + 0.5f),
-            .ignition = s_ignition,
+            .rpm  = rpm,
+            .load = load,
+            .maf  = maf,
+            .map  = map,
+            .iat  = iat,
+            .ev   = (int)(ecuV * 100 + 0.5f),
+            .sv   = sv,
+            .iac  = (int)(f_iac + 0.5f),
+            .st   = model_status(run, rpm, load01, iat),
+            .cm   = cm,
+            .cp   = 10,
         };
-        st.icons[0] = s_headlights;
-        st.icons[1] = s_check_eng;
-        st.icons[2] = !s_ignition;                   /* battery: on when off  */
-        st.icons[3] = (st.temp >= HIGH_TEMP_C);
-        st.icons[4] = (st.fuel <= LOW_FUEL_PCT);
 
         xQueueOverwrite(s_state_q, &st);             /* latest-wins, no mutex */
         vTaskDelay(pdMS_TO_TICKS(INPUT_PERIOD_MS));
@@ -259,7 +293,7 @@ static void telemetry_task(void *arg)
     dash_state_t st, last;
     memset(&last, 0xFF, sizeof(last));               /* force first send */
     int64_t last_tx = 0;
-    char buf[96];
+    char buf[160];
     const TickType_t period = pdMS_TO_TICKS(1000 / TELEMETRY_HZ);
 
     while (1) {
@@ -271,11 +305,12 @@ static void telemetry_task(void *arg)
         bool heartbeat = (now - last_tx) > TX_HEARTBEAT_US;
         if (!changed && !heartbeat) continue;        /* idle => silent link  */
 
+        /* wire frame — see dashboard-ui/src/lib/protocol.ts (byte-for-byte) */
         int len = snprintf(buf, sizeof(buf),
-            "{\"s\":%d,\"r\":%d,\"f\":%d,\"t\":%d,\"ign\":%d,"
-            "\"i\":[%d,%d,%d,%d,%d]}",
-            st.speed, st.rpm, st.fuel, st.temp, st.ignition,
-            st.icons[0], st.icons[1], st.icons[2], st.icons[3], st.icons[4]);
+            "{\"rpm\":%d,\"ld\":%d,\"maf\":%d,\"map\":%d,\"iat\":%d,"
+            "\"ev\":%d,\"sv\":%d,\"iac\":%d,\"st\":%d,\"cm\":%d,\"cp\":%d}",
+            st.rpm, st.load, st.maf, st.map, st.iat,
+            st.ev, st.sv, st.iac, st.st, st.cm, st.cp);
 
         broadcast_json(buf, len);
         last = st;
@@ -334,7 +369,16 @@ static void wifi_softap_init(void)
 {
     ESP_ERROR_CHECK(esp_netif_init());
     ESP_ERROR_CHECK(esp_event_loop_create_default());
-    esp_netif_create_default_wifi_ap();
+    esp_netif_t *ap_netif = esp_netif_create_default_wifi_ap();
+
+    /* Static AP IP per spec: 10.10.10.10. Stop DHCP, set ip/gw/mask, restart DHCP. */
+    esp_netif_ip_info_t ip_info;
+    ip_info.ip.addr      = esp_ip4addr_aton(AP_IP_ADDR);
+    ip_info.gw.addr      = esp_ip4addr_aton(AP_IP_ADDR);
+    ip_info.netmask.addr = esp_ip4addr_aton("255.255.255.0");
+    ESP_ERROR_CHECK(esp_netif_dhcps_stop(ap_netif));
+    ESP_ERROR_CHECK(esp_netif_set_ip_info(ap_netif, &ip_info));
+    ESP_ERROR_CHECK(esp_netif_dhcps_start(ap_netif));
 
     wifi_init_config_t cfg = WIFI_INIT_CONFIG_DEFAULT();
     ESP_ERROR_CHECK(esp_wifi_init(&cfg));
@@ -349,13 +393,15 @@ static void wifi_softap_init(void)
             .authmode       = WIFI_AUTH_WPA2_PSK,
         },
     };
-    if (strlen(WIFI_PASS) == 0) ap.ap.authmode = WIFI_AUTH_OPEN;
+    /* WPA2-PSK requires an 8..63 char key; a shorter/empty pass forces an OPEN AP. */
+    if (strlen(WIFI_PASS) < 8) ap.ap.authmode = WIFI_AUTH_OPEN;
 
     ESP_ERROR_CHECK(esp_wifi_set_mode(WIFI_MODE_AP));
     ESP_ERROR_CHECK(esp_wifi_set_config(WIFI_IF_AP, &ap));
     ESP_ERROR_CHECK(esp_wifi_start());
 
-    ESP_LOGI(TAG, "SoftAP up: SSID '%s'  ->  http://192.168.4.1", WIFI_SSID);
+    ESP_LOGI(TAG, "SoftAP up: SSID '%s' (%s)  ->  http://%s", WIFI_SSID,
+             ap.ap.authmode == WIFI_AUTH_OPEN ? "open" : "wpa2", AP_IP_ADDR);
 }
 
 /* --------------------------------- MAIN ----------------------------------- */
