@@ -53,3 +53,24 @@ dkms.conf
 
 # debug information files
 *.dwo
+
+# --- ESP-IDF build artifacts ---
+build/
+
+# sdkconfig IS committed (it carries CONFIG_HTTPD_WS_SUPPORT) — ignore only its backups
+sdkconfig.old
+sdkconfig.defaults.old
+
+# Component manager (re-fetched on build)
+managed_components/
+dependencies.lock
+
+# Editor / OS noise
+.vscode/
+.idea/
+*.swp
+*~
+.DS_Store
+
+# NOTE: main/web/index.html.gz is intentionally NOT ignored — EMBED_FILES needs it
+# present at configure time, so it's committed to keep fresh clones building.

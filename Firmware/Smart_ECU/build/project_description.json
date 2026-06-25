@@ -1,7 +1,7 @@
 {
     "version":            "1.2",
     "project_name":       "Smart_ECU",
-    "project_version":    "2085239",
+    "project_version":    "c559ccd-dirty",
     "project_path":       "/home/ali/MyProjects/S-ECU/Firmware/Smart_ECU",
     "idf_path":           "/home/ali/ESP_IDF/Version_5.5.2/IDF_v5.5.2/v5.5.2/esp-idf",
     "build_dir":          "/home/ali/MyProjects/S-ECU/Firmware/Smart_ECU/build",
