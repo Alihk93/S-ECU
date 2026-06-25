@@ -6,7 +6,7 @@
     "idf_path":           "/home/ali/ESP_IDF/Version_5.5.2/IDF_v5.5.2/v5.5.2/esp-idf",
     "build_dir":          "/home/ali/MyProjects/S-ECU/Firmware/Smart_ECU/build",
     "config_file":        "/home/ali/MyProjects/S-ECU/Firmware/Smart_ECU/sdkconfig",
-    "config_defaults":    "",
+    "config_defaults":    "/home/ali/MyProjects/S-ECU/Firmware/Smart_ECU/sdkconfig.defaults",
     "bootloader_elf":     "/home/ali/MyProjects/S-ECU/Firmware/Smart_ECU/build/bootloader/bootloader.elf",
     "app_elf":            "Smart_ECU.elf",
     "app_bin":            "Smart_ECU.bin",
