@@ -1,0 +1,12 @@
+Command: cmake -G Ninja -DPYTHON_DEPS_CHECKED=1 -DPYTHON=/home/ali/ESP_IDF/Version_5.5.2/IDF_Tool_v5.5.2/python_env/idf5.5_py3.13_env/bin/python -DESP_PLATFORM=1 -DCCACHE_ENABLE=0 /home/ali/MyProjects/S-ECU/Firmware/Smart_ECU
+CMake Error in main/CMakeLists.txt:
+  Cannot find source file:
+
+    /home/ali/MyProjects/S-ECU/Firmware/Smart_ECU/main/web/index.html.gz
+
+  Tried extensions .c .C .c++ .cc .cpp .cxx .cu .mpp .m .M .mm .ixx .cppm
+  .ccm .cxxm .c++m .h .hh .h++ .hm .hpp .hxx .in .txx .f .F .for .f77 .f90
+  .f95 .f03 .hip .ispc
+
+
+CMake Generate step failed.  Build files cannot be regenerated correctly.

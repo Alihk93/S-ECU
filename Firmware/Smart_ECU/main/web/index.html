@@ -1,0 +1,68 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>S-ECU · backend test</title>
+<style>
+  :root { color-scheme: dark; }
+  body { margin:0; font:14px/1.5 ui-monospace,Menlo,Consolas,monospace;
+         background:#0b0f14; color:#cfe8ff; padding:24px; }
+  h1 { font-size:15px; letter-spacing:.15em; color:#5ad1ff; margin:0 0 4px; }
+  .sub { color:#5b6b7a; margin-bottom:20px; }
+  #link { display:inline-block; padding:2px 10px; border-radius:10px;
+          background:#123; color:#5ad1ff; }
+  #link.down { background:#311; color:#ff6b6b; }
+  .grid { display:grid; grid-template-columns:repeat(auto-fit,minmax(120px,1fr));
+          gap:12px; margin:18px 0; }
+  .cell { background:#111922; border:1px solid #1d2a36; border-radius:10px; padding:12px; }
+  .k { color:#5b6b7a; font-size:11px; text-transform:uppercase; letter-spacing:.1em; }
+  .v { font-size:26px; color:#eaf6ff; }
+  .icons span { display:inline-block; padding:3px 8px; margin:2px; border-radius:8px;
+                background:#0e1620; color:#33414f; border:1px solid #1d2a36; }
+  .icons span.on { background:#0a2a16; color:#62ffa1; border-color:#1d5a36; }
+  #raw { color:#5b6b7a; word-break:break-all; margin-top:16px; }
+</style>
+</head>
+<body>
+  <h1>S-ECU BACKEND TEST</h1>
+  <div class="sub">placeholder UI — replace with the SVG dashboard. status: <span id="link" class="down">connecting…</span></div>
+
+  <div class="grid">
+    <div class="cell"><div class="k">speed</div><div class="v"><span id="s">–</span> km/h</div></div>
+    <div class="cell"><div class="k">rpm</div><div class="v" id="r">–</div></div>
+    <div class="cell"><div class="k">fuel</div><div class="v"><span id="f">–</span> %</div></div>
+    <div class="cell"><div class="k">temp</div><div class="v"><span id="t">–</span> °C</div></div>
+    <div class="cell"><div class="k">ignition</div><div class="v" id="ign">–</div></div>
+  </div>
+
+  <div class="k">warning icons [headlights, check_engine, battery, high_temp, low_fuel]</div>
+  <div class="icons" id="icons"></div>
+
+  <div id="raw">waiting for first frame…</div>
+
+<script>
+const ICONS = ['headlights','check_engine','battery','high_temp','low_fuel'];
+const box = document.getElementById('icons');
+box.innerHTML = ICONS.map((n,i)=>`<span id="ic${i}">${n}</span>`).join('');
+
+function apply(d){
+  for (const k of ['s','r','f','t']) if (d[k]!==undefined) document.getElementById(k).textContent = d[k];
+  if (d.ign!==undefined) document.getElementById('ign').textContent = d.ign ? 'ON' : 'OFF';
+  if (Array.isArray(d.i)) d.i.forEach((on,i)=>document.getElementById('ic'+i)?.classList.toggle('on',!!on));
+  document.getElementById('raw').textContent = JSON.stringify(d);
+}
+
+let ws, retry=0;
+function connect(){
+  ws = new WebSocket(`ws://${location.host}/ws`);
+  ws.onopen = ()=>{ retry=0; const l=document.getElementById('link'); l.textContent='connected'; l.classList.remove('down'); };
+  ws.onmessage = e => { try { apply(JSON.parse(e.data)); } catch(_){} };
+  ws.onerror = ()=> ws.close();
+  ws.onclose = ()=>{ const l=document.getElementById('link'); l.textContent='reconnecting…'; l.classList.add('down');
+                     setTimeout(connect, Math.min(500*2**retry++,5000)); };
+}
+connect();
+</script>
+</body>
+</html>
