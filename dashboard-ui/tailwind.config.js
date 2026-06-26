@@ -7,6 +7,18 @@ module.exports = {
   ],
   theme: {
     extend: {
+      screens: {
+        // The full single-view multi-panel grid needs real estate in BOTH axes.
+        // The desktop-sized panels only pack into one viewport at ~820px+ tall.
+        fit: { raw: "(min-width: 768px) and (min-height: 820px)" },
+        // Anything that can't hold the no-scroll layout falls back to the
+        // scrollable 2-column layout: any short viewport (landscape phones), or
+        // a wide-but-short one (tablet landscape) where the grid would overflow.
+        // Narrow portrait phones (<768w, >=680h) stay on the compact no-scroll stack.
+        short: {
+          raw: "(max-height: 679px), (min-width: 768px) and (max-height: 819px)",
+        },
+      },
       fontFamily: {
         display: ['"Chakra Petch"', "system-ui", "sans-serif"],
         data: ['"JetBrains Mono"', "ui-monospace", "monospace"],

@@ -16,7 +16,7 @@ export default function App() {
   const { state, phaseRef, rpmRef, cmpRef, cmpPhaseRef, fps } = useEcuEngine(link);
 
   return (
-    <div className="hud-backdrop scanlines relative flex h-dvh w-full flex-col gap-1.5 overflow-hidden p-1.5 text-foreground md:gap-2.5 md:p-2.5">
+    <div className="hud-backdrop scanlines relative flex h-dvh w-full flex-col gap-1.5 overflow-hidden p-1.5 text-foreground short:overflow-y-auto md:gap-2.5 md:p-2.5">
       <TopBar fps={fps} linkStatus={link.status} />
 
       {/* RPM hero */}
@@ -24,21 +24,21 @@ export default function App() {
         <RpmBar rpm={state.rpm} load={state.load} />
       </HudPanel>
 
-      {/* Main grid — mobile: full-width sections stacked; md+: gauges left, scope cluster right */}
-      <div className="flex min-h-0 flex-1 flex-col gap-1.5 md:grid md:grid-cols-12 md:grid-rows-1 md:gap-2.5">
+      {/* Main grid — stacked (portrait/landscape phone); fit (wide+tall): gauges left, scope cluster right */}
+      <div className="flex min-h-0 flex-1 flex-col gap-1.5 short:flex-none short:grid short:grid-cols-12 short:items-start short:gap-2 fit:grid fit:grid-cols-12 fit:grid-rows-1 fit:gap-2.5">
         {/* Left: gauges + voltages */}
-        <div className="flex shrink-0 flex-col gap-1.5 md:col-span-4 md:min-h-0 md:shrink md:gap-2.5">
+        <div className="flex shrink-0 flex-col gap-1.5 short:col-span-5 fit:col-span-4 fit:min-h-0 fit:shrink fit:gap-2.5">
           <HudPanel
             title="Analog Sensors"
             accent="#00e7f2"
             className="flex min-h-0 flex-1 flex-col"
-            bodyClassName="grid h-[64px] grid-cols-3 grid-rows-1 gap-1 overflow-hidden md:h-auto md:min-h-0 md:flex-1 md:grid-cols-1 md:grid-rows-3"
+            bodyClassName="grid h-[64px] grid-cols-3 grid-rows-1 gap-1 overflow-hidden fit:h-auto fit:min-h-0 fit:flex-1 fit:grid-cols-1 fit:grid-rows-3"
           >
             {GAUGES.map((g) => (
               <Gauge key={g.key} def={g} value={state[g.key]} />
             ))}
           </HudPanel>
-          <HudPanel title="Voltage Rails" accent="#2bff88" className="shrink-0" bodyClassName="grid grid-cols-2 gap-x-3 gap-y-1 md:grid-cols-1 md:gap-2">
+          <HudPanel title="Voltage Rails" accent="#2bff88" className="shrink-0" bodyClassName="grid grid-cols-2 gap-x-3 gap-y-1 fit:grid-cols-1 fit:gap-2">
             {VOLTAGES.map((v) => (
               <VoltageMeter key={v.key} def={v} value={state[v.key]} />
             ))}
@@ -46,11 +46,11 @@ export default function App() {
         </div>
 
         {/* Right: scope + coils + injectors */}
-        <div className="flex min-h-0 flex-1 flex-col gap-1.5 md:col-span-8 md:gap-2.5">
+        <div className="flex min-h-0 flex-1 flex-col gap-1.5 short:col-span-7 fit:col-span-8 fit:gap-2.5">
           <HudPanel
             title="Signal Oscilloscope · CKP / CMP1 / CMP2"
             accent="#ff36c8"
-            className="flex min-h-0 flex-1 flex-col"
+            className="flex min-h-0 flex-1 flex-col short:h-[200px] short:flex-none"
             bodyClassName="flex-1 min-h-0"
           >
             <WaveformScope

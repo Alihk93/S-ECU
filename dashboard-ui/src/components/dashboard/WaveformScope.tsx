@@ -162,7 +162,7 @@ export function WaveformScope({
       </div>
       <div
         ref={wrapRef}
-        className="scanlines relative min-h-0 flex-1 overflow-hidden rounded-sm border border-border md:min-h-[200px]"
+        className="scanlines relative min-h-0 flex-1 overflow-hidden rounded-sm border border-border fit:min-h-[200px]"
       >
         <canvas ref={canvasRef} className="block h-full w-full" />
       </div>
