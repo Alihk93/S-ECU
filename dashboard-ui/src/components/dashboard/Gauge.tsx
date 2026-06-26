@@ -47,8 +47,12 @@ export function Gauge({ def, value }: GaugeProps) {
   const dashTotal = (SWEEP / 360) * 2 * Math.PI * R;
 
   return (
-    <div className="flex flex-col items-center">
-      <svg viewBox="0 0 200 200" className="w-full max-w-[210px]">
+    <div className="flex h-full min-h-0 w-full flex-col items-center justify-center overflow-hidden">
+      <svg
+        viewBox="0 0 200 200"
+        preserveAspectRatio="xMidYMid meet"
+        className="h-full max-h-[210px] w-full min-h-0"
+      >
         <defs>
           <filter id={`glow-${def.key}`} x="-30%" y="-30%" width="160%" height="160%">
             <feGaussianBlur stdDeviation="2.4" result="b" />

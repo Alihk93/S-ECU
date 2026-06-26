@@ -19,7 +19,7 @@ export default function App() {
     useEcuEngine(link);
 
   return (
-    <div className="hud-backdrop scanlines relative flex min-h-dvh w-full flex-col gap-2.5 p-2.5 text-foreground lg:h-dvh lg:overflow-hidden">
+    <div className="hud-backdrop scanlines relative flex min-h-dvh w-full flex-col gap-2.5 p-2.5 text-foreground md:h-dvh md:overflow-hidden">
       <TopBar
         running={controls.running}
         fps={fps}
@@ -35,13 +35,18 @@ export default function App() {
       {/* Main grid */}
       <div className="grid min-h-0 flex-1 grid-cols-12 gap-2.5">
         {/* Left: gauges + voltages */}
-        <div className="col-span-12 flex min-h-0 flex-col gap-2.5 lg:col-span-3">
-          <HudPanel title="Analog Sensors" accent="#00e7f2" className="flex-1" bodyClassName="grid grid-cols-3 gap-1 lg:grid-cols-1">
+        <div className="col-span-12 flex min-h-0 flex-col gap-2.5 md:col-span-3">
+          <HudPanel
+            title="Analog Sensors"
+            accent="#00e7f2"
+            className="flex min-h-0 flex-1 flex-col"
+            bodyClassName="grid min-h-0 flex-1 grid-cols-3 gap-1 md:grid-cols-1 md:grid-rows-3"
+          >
             {GAUGES.map((g) => (
               <Gauge key={g.key} def={g} value={state[g.key]} />
             ))}
           </HudPanel>
-          <HudPanel title="Voltage Rails" accent="#2bff88" bodyClassName="space-y-4">
+          <HudPanel title="Voltage Rails" accent="#2bff88" className="shrink-0" bodyClassName="space-y-3 md:space-y-2">
             {VOLTAGES.map((v) => (
               <VoltageMeter key={v.key} def={v} value={state[v.key]} />
             ))}
@@ -49,7 +54,7 @@ export default function App() {
         </div>
 
         {/* Center: scope + coils + injectors */}
-        <div className="col-span-12 flex min-h-0 flex-col gap-2.5 lg:col-span-6">
+        <div className="col-span-12 flex min-h-0 flex-col gap-2.5 md:col-span-6">
           <HudPanel
             title="Signal Oscilloscope · CKP / CMP1 / CMP2"
             accent="#ff36c8"
@@ -78,7 +83,7 @@ export default function App() {
         </div>
 
         {/* Right: controls + debug */}
-        <div className="col-span-12 flex min-h-0 flex-col gap-2.5 lg:col-span-3">
+        <div className="col-span-12 flex min-h-0 flex-col gap-2.5 md:col-span-3">
           <HudPanel title="Simulation Console" accent="#ffb000" className="flex min-h-0 flex-[1.4] flex-col" bodyClassName="flex-1 min-h-0">
             <SimControls controls={controls} setControls={setControls} />
           </HudPanel>
@@ -89,7 +94,7 @@ export default function App() {
       </div>
 
       {/* Status strip */}
-      <HudPanel title="Digital Status · 12 Channels" accent="#9d6bff" className="shrink-0" bodyClassName="grid grid-cols-3 gap-1.5 sm:grid-cols-4 lg:grid-cols-6 xl:grid-cols-12">
+      <HudPanel title="Digital Status · 12 Channels" accent="#9d6bff" className="shrink-0" bodyClassName="grid grid-cols-3 gap-1.5 sm:grid-cols-4 md:grid-cols-6 xl:grid-cols-12">
         {STATUS_DEFS.map((s) => (
           <StatusIndicator key={s.key} def={s} on={!!state.status[s.key]} />
         ))}
