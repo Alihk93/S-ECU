@@ -1,10 +1,8 @@
 import { CoilIndicator } from "@/components/dashboard/CoilIndicator";
-import { DebugPanel } from "@/components/dashboard/DebugPanel";
 import { Gauge } from "@/components/dashboard/Gauge";
 import { HudPanel } from "@/components/dashboard/HudPanel";
 import { InjectorAnimation } from "@/components/dashboard/InjectorAnimation";
 import { RpmBar } from "@/components/dashboard/RpmBar";
-import { SimControls } from "@/components/dashboard/SimControls";
 import { StatusIndicator } from "@/components/dashboard/StatusIndicator";
 import { TopBar } from "@/components/dashboard/TopBar";
 import { VoltageMeter } from "@/components/dashboard/VoltageMeter";
@@ -15,28 +13,21 @@ import { CYL_COUNT, GAUGES, STATUS_DEFS, VOLTAGES } from "@/lib/ecu";
 
 export default function App() {
   const link = useEcuLink();
-  const { state, controls, setControls, phaseRef, rpmRef, cmpRef, cmpPhaseRef, fps } =
-    useEcuEngine(link);
+  const { state, phaseRef, rpmRef, cmpRef, cmpPhaseRef, fps } = useEcuEngine(link);
 
   return (
     <div className="hud-backdrop scanlines relative flex h-dvh w-full flex-col gap-1.5 overflow-hidden p-1.5 text-foreground md:gap-2.5 md:p-2.5">
-      <TopBar
-        running={controls.running}
-        fps={fps}
-        linkStatus={link.status}
-        onToggleRun={() => setControls({ running: !controls.running })}
-      />
+      <TopBar fps={fps} linkStatus={link.status} />
 
       {/* RPM hero */}
       <HudPanel title="Engine Speed" accent="#ff2d55" className="shrink-0">
         <RpmBar rpm={state.rpm} load={state.load} />
       </HudPanel>
 
-      {/* Main grid — mobile: full-width sections stacked (gauges, console, scope cluster);
-          md+: the familiar 3 columns */}
+      {/* Main grid — mobile: full-width sections stacked; md+: gauges left, scope cluster right */}
       <div className="flex min-h-0 flex-1 flex-col gap-1.5 md:grid md:grid-cols-12 md:grid-rows-1 md:gap-2.5">
         {/* Left: gauges + voltages */}
-        <div className="order-1 flex shrink-0 flex-col gap-1.5 md:order-none md:col-span-3 md:min-h-0 md:shrink md:gap-2.5">
+        <div className="flex shrink-0 flex-col gap-1.5 md:col-span-4 md:min-h-0 md:shrink md:gap-2.5">
           <HudPanel
             title="Analog Sensors"
             accent="#00e7f2"
@@ -54,8 +45,8 @@ export default function App() {
           </HudPanel>
         </div>
 
-        {/* Center: scope + coils + injectors */}
-        <div className="order-3 flex min-h-0 flex-1 flex-col gap-1.5 md:order-none md:col-span-6 md:gap-2.5">
+        {/* Right: scope + coils + injectors */}
+        <div className="flex min-h-0 flex-1 flex-col gap-1.5 md:col-span-8 md:gap-2.5">
           <HudPanel
             title="Signal Oscilloscope · CKP / CMP1 / CMP2"
             accent="#ff36c8"
@@ -80,16 +71,6 @@ export default function App() {
             {Array.from({ length: CYL_COUNT }).map((_, i) => (
               <InjectorAnimation key={i} index={i} value={state.injectors[i]} />
             ))}
-          </HudPanel>
-        </div>
-
-        {/* Right: controls + debug (mobile: fixed band, console scrolls internally) */}
-        <div className="order-2 flex h-[88px] shrink-0 flex-row gap-1.5 md:order-none md:h-auto md:col-span-3 md:min-h-0 md:shrink md:flex-col md:gap-2.5">
-          <HudPanel title="Simulation Console" accent="#ffb000" className="flex min-h-0 flex-[1.4] flex-col" bodyClassName="flex-1 min-h-0">
-            <SimControls controls={controls} setControls={setControls} />
-          </HudPanel>
-          <HudPanel title="Debug · Protocol" accent="#9d6bff" className="flex min-h-0 flex-1 flex-col" bodyClassName="flex-1 min-h-0">
-            <DebugPanel state={state} fps={fps} />
           </HudPanel>
         </div>
       </div>

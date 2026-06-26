@@ -1,13 +1,10 @@
 import { useEffect, useState } from "react";
-import { Activity, Cpu, Pause, Play, Wifi } from "lucide-react";
-import { cn } from "@/lib/utils";
+import { Activity, Cpu, Wifi } from "lucide-react";
 import type { LinkStatus } from "@/hooks/useEcuLink";
 
 interface TopBarProps {
-  running: boolean;
   fps: number;
   linkStatus: LinkStatus;
-  onToggleRun: () => void;
 }
 
 const LINK_BADGE: Record<
@@ -16,10 +13,10 @@ const LINK_BADGE: Record<
 > = {
   live: { label: "Live · ESP", color: "#2bff88" },
   connecting: { label: "Link…", color: "#ffb000" },
-  offline: { label: "Simulation", color: "#ffb000" },
+  offline: { label: "No Link", color: "#ff2d55" },
 };
 
-export function TopBar({ running, fps, linkStatus, onToggleRun }: TopBarProps) {
+export function TopBar({ fps, linkStatus }: TopBarProps) {
   const [clock, setClock] = useState("");
   useEffect(() => {
     const tick = () =>
@@ -79,18 +76,6 @@ export function TopBar({ running, fps, linkStatus, onToggleRun }: TopBarProps) {
           />
           {LINK_BADGE[linkStatus].label}
         </span>
-        <button
-          onClick={onToggleRun}
-          className={cn(
-            "flex items-center gap-1.5 rounded-sm border px-3 py-1.5 font-display text-[11px] uppercase tracking-hud transition-colors",
-            running
-              ? "border-neon-green/50 text-neon-green hover:bg-neon-green/10"
-              : "border-neon-red/50 text-neon-red hover:bg-neon-red/10",
-          )}
-        >
-          {running ? <Pause className="h-3.5 w-3.5" /> : <Play className="h-3.5 w-3.5" />}
-          {running ? "Running" : "Halted"}
-        </button>
         <span className="hidden font-data text-[11px] tabular-nums text-muted-foreground lg:block">
           {clock}
         </span>
