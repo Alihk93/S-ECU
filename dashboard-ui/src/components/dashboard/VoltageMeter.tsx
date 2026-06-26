@@ -14,20 +14,20 @@ export function VoltageMeter({ def, value }: VoltageMeterProps) {
   const nomT = clamp((def.nominal - def.min) / (def.max - def.min), 0, 1);
 
   return (
-    <div className="flex flex-col gap-2">
+    <div className="flex flex-col gap-1 md:gap-2">
       <div className="flex items-baseline justify-between">
-        <span className="font-display text-[10px] uppercase tracking-hud text-muted-foreground">
+        <span className="font-display text-[9px] uppercase tracking-hud text-muted-foreground md:text-[10px]">
           {def.label}
         </span>
         <span
-          className={cn("font-data text-2xl font-bold leading-none")}
+          className={cn("font-data text-lg font-bold leading-none md:text-2xl")}
           style={{ color, textShadow: `0 0 12px ${color}55` }}
         >
           {value.toFixed(2)}
           <span className="ml-0.5 text-xs text-muted-foreground">{def.unit}</span>
         </span>
       </div>
-      <div className="relative h-2.5 overflow-hidden rounded-full bg-secondary">
+      <div className="relative h-2 overflow-hidden rounded-full bg-secondary md:h-2.5">
         <div
           className="absolute inset-y-0 left-0 rounded-full"
           style={{
@@ -43,7 +43,7 @@ export function VoltageMeter({ def, value }: VoltageMeterProps) {
           style={{ left: `${nomT * 100}%` }}
         />
       </div>
-      <div className="flex justify-between font-data text-[9px] text-muted-foreground/60">
+      <div className="hidden justify-between font-data text-[9px] text-muted-foreground/60 md:flex">
         <span>{def.min}</span>
         <span>nom {def.nominal}</span>
         <span>{def.max}</span>

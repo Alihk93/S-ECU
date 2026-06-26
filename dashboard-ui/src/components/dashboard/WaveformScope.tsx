@@ -140,7 +140,7 @@ export function WaveformScope({
 
   return (
     <div className="flex h-full flex-col">
-      <div className="mb-2 flex items-center justify-between">
+      <div className="mb-2 hidden items-center justify-between md:flex">
         <div className="flex items-center gap-3 font-data text-[10px] text-muted-foreground">
           <span>
             <span className="text-neon-cyan">CKP</span> 60-2
@@ -162,7 +162,7 @@ export function WaveformScope({
       </div>
       <div
         ref={wrapRef}
-        className="scanlines relative min-h-[200px] flex-1 overflow-hidden rounded-sm border border-border md:min-h-0"
+        className="scanlines relative min-h-0 flex-1 overflow-hidden rounded-sm border border-border md:min-h-[200px]"
       >
         <canvas ref={canvasRef} className="block h-full w-full" />
       </div>

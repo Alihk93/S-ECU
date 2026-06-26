@@ -19,7 +19,7 @@ export default function App() {
     useEcuEngine(link);
 
   return (
-    <div className="hud-backdrop scanlines relative flex min-h-dvh w-full flex-col gap-2.5 p-2.5 text-foreground md:h-dvh md:overflow-hidden">
+    <div className="hud-backdrop scanlines relative flex h-dvh w-full flex-col gap-1.5 overflow-hidden p-1.5 text-foreground md:gap-2.5 md:p-2.5">
       <TopBar
         running={controls.running}
         fps={fps}
@@ -32,21 +32,22 @@ export default function App() {
         <RpmBar rpm={state.rpm} load={state.load} />
       </HudPanel>
 
-      {/* Main grid */}
-      <div className="grid min-h-0 flex-1 grid-cols-12 gap-2.5">
+      {/* Main grid — mobile: full-width sections stacked (gauges, console, scope cluster);
+          md+: the familiar 3 columns */}
+      <div className="flex min-h-0 flex-1 flex-col gap-1.5 md:grid md:grid-cols-12 md:grid-rows-1 md:gap-2.5">
         {/* Left: gauges + voltages */}
-        <div className="col-span-12 flex min-h-0 flex-col gap-2.5 md:col-span-3">
+        <div className="order-1 flex shrink-0 flex-col gap-1.5 md:order-none md:col-span-3 md:min-h-0 md:shrink md:gap-2.5">
           <HudPanel
             title="Analog Sensors"
             accent="#00e7f2"
             className="flex min-h-0 flex-1 flex-col"
-            bodyClassName="grid min-h-0 flex-1 grid-cols-3 gap-1 md:grid-cols-1 md:grid-rows-3"
+            bodyClassName="grid h-[64px] grid-cols-3 grid-rows-1 gap-1 overflow-hidden md:h-auto md:min-h-0 md:flex-1 md:grid-cols-1 md:grid-rows-3"
           >
             {GAUGES.map((g) => (
               <Gauge key={g.key} def={g} value={state[g.key]} />
             ))}
           </HudPanel>
-          <HudPanel title="Voltage Rails" accent="#2bff88" className="shrink-0" bodyClassName="space-y-3 md:space-y-2">
+          <HudPanel title="Voltage Rails" accent="#2bff88" className="shrink-0" bodyClassName="grid grid-cols-2 gap-x-3 gap-y-1 md:grid-cols-1 md:gap-2">
             {VOLTAGES.map((v) => (
               <VoltageMeter key={v.key} def={v} value={state[v.key]} />
             ))}
@@ -54,7 +55,7 @@ export default function App() {
         </div>
 
         {/* Center: scope + coils + injectors */}
-        <div className="col-span-12 flex min-h-0 flex-col gap-2.5 md:col-span-6">
+        <div className="order-3 flex min-h-0 flex-1 flex-col gap-1.5 md:order-none md:col-span-6 md:gap-2.5">
           <HudPanel
             title="Signal Oscilloscope · CKP / CMP1 / CMP2"
             accent="#ff36c8"
@@ -69,21 +70,21 @@ export default function App() {
             />
           </HudPanel>
 
-          <HudPanel title="Ignition Coils ×8" accent="#00e7f2" bodyClassName="grid grid-cols-4 gap-1.5 sm:grid-cols-8">
+          <HudPanel title="Ignition Coils ×8" accent="#00e7f2" className="shrink-0" bodyClassName="grid grid-cols-8 gap-1 sm:gap-1.5">
             {Array.from({ length: CYL_COUNT }).map((_, i) => (
               <CoilIndicator key={i} index={i} dwell={state.coils[i]} spark={state.coilSpark[i]} />
             ))}
           </HudPanel>
 
-          <HudPanel title="Injectors ×8" accent="#2bff88" bodyClassName="grid grid-cols-4 gap-1.5 sm:grid-cols-8">
+          <HudPanel title="Injectors ×8" accent="#2bff88" className="shrink-0" bodyClassName="grid grid-cols-8 gap-1 sm:gap-1.5">
             {Array.from({ length: CYL_COUNT }).map((_, i) => (
               <InjectorAnimation key={i} index={i} value={state.injectors[i]} />
             ))}
           </HudPanel>
         </div>
 
-        {/* Right: controls + debug */}
-        <div className="col-span-12 flex min-h-0 flex-col gap-2.5 md:col-span-3">
+        {/* Right: controls + debug (mobile: fixed band, console scrolls internally) */}
+        <div className="order-2 flex h-[88px] shrink-0 flex-row gap-1.5 md:order-none md:h-auto md:col-span-3 md:min-h-0 md:shrink md:flex-col md:gap-2.5">
           <HudPanel title="Simulation Console" accent="#ffb000" className="flex min-h-0 flex-[1.4] flex-col" bodyClassName="flex-1 min-h-0">
             <SimControls controls={controls} setControls={setControls} />
           </HudPanel>
@@ -94,7 +95,7 @@ export default function App() {
       </div>
 
       {/* Status strip */}
-      <HudPanel title="Digital Status · 12 Channels" accent="#9d6bff" className="shrink-0" bodyClassName="grid grid-cols-3 gap-1.5 sm:grid-cols-4 md:grid-cols-6 xl:grid-cols-12">
+      <HudPanel title="Digital Status · 12 Channels" accent="#9d6bff" className="shrink-0" bodyClassName="grid grid-cols-6 gap-1 sm:grid-cols-4 sm:gap-1.5 md:grid-cols-6 xl:grid-cols-12">
         {STATUS_DEFS.map((s) => (
           <StatusIndicator key={s.key} def={s} on={!!state.status[s.key]} />
         ))}

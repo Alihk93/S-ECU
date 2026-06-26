@@ -38,30 +38,34 @@ export function RpmBar({ rpm, load = 0, segments = 40 }: RpmBarProps) {
           );
         })}
       </div>
-      <div className="flex shrink-0 flex-col items-end leading-none">
-        <div
-          className="font-data text-[22px] font-bold tabular-nums"
-          style={{ color: "#00e7f2", textShadow: "0 0 12px rgba(0,231,242,0.4)" }}
-        >
-          {loadPct}
-          <span className="text-[14px]">%</span>
+      <div className="flex shrink-0 items-end gap-4 leading-none md:flex-col md:items-end md:gap-0">
+        <div className="flex flex-col items-end">
+          <div
+            className="font-data text-[20px] font-bold tabular-nums md:text-[22px]"
+            style={{ color: "#00e7f2", textShadow: "0 0 12px rgba(0,231,242,0.4)" }}
+          >
+            {loadPct}
+            <span className="text-[13px]">%</span>
+          </div>
+          <div className="font-display text-[9px] uppercase tracking-hud text-muted-foreground md:mb-2 md:text-[10px]">
+            LOAD
+          </div>
         </div>
-        <div className="mb-2 font-display text-[10px] uppercase tracking-hud text-muted-foreground">
-          LOAD
-        </div>
-        <div
-          className="font-data text-[40px] font-bold tabular-nums"
-          style={{
-            color: over ? "#ff2d55" : "#eafdff",
-            textShadow: over
-              ? "0 0 18px #ff2d55"
-              : "0 0 16px rgba(0,231,242,0.45)",
-          }}
-        >
-          {Math.round(rpm).toString().padStart(4, "0")}
-        </div>
-        <div className="font-display text-[10px] uppercase tracking-hud text-muted-foreground">
-          RPM {over && <span className="text-neon-red text-glow-soft">· SHIFT</span>}
+        <div className="flex flex-col items-end">
+          <div
+            className="font-data text-[30px] font-bold tabular-nums md:text-[40px]"
+            style={{
+              color: over ? "#ff2d55" : "#eafdff",
+              textShadow: over
+                ? "0 0 18px #ff2d55"
+                : "0 0 16px rgba(0,231,242,0.45)",
+            }}
+          >
+            {Math.round(rpm).toString().padStart(4, "0")}
+          </div>
+          <div className="font-display text-[9px] uppercase tracking-hud text-muted-foreground md:text-[10px]">
+            RPM {over && <span className="text-neon-red text-glow-soft">· SHIFT</span>}
+          </div>
         </div>
       </div>
     </div>

@@ -13,12 +13,12 @@ export function CoilIndicator({ index, dwell, spark }: CoilIndicatorProps) {
   const glow = spark ? 1 : dwell;
 
   return (
-    <div className="panel flex flex-col items-center gap-1 rounded-sm px-1.5 py-2">
+    <div className="panel flex flex-col items-center gap-0.5 rounded-sm px-1 py-0.5 md:gap-1 md:px-1.5 md:py-2">
       <span className="font-data text-[9px] text-muted-foreground">C{index + 1}</span>
-      <div className="relative h-12 w-7">
+      <div className="relative h-6 w-6 md:h-12 md:w-7">
         {/* coil body */}
         <div
-          className="absolute inset-x-1 top-0 h-7 rounded-sm border"
+          className="absolute inset-x-1 top-0 h-4 rounded-sm border md:h-7"
           style={{
             borderColor: color,
             background: `linear-gradient(180deg, ${color}22, transparent)`,
@@ -39,7 +39,7 @@ export function CoilIndicator({ index, dwell, spark }: CoilIndicatorProps) {
         </div>
         {/* spark plug gap */}
         <div className="absolute inset-x-0 bottom-0 flex flex-col items-center">
-          <div className="h-3 w-px" style={{ background: color, opacity: 0.6 }} />
+          <div className="h-2 w-px md:h-3" style={{ background: color, opacity: 0.6 }} />
           <div
             className={cn("h-1.5 w-1.5 rounded-full", spark && "animate-none")}
             style={{
@@ -50,7 +50,7 @@ export function CoilIndicator({ index, dwell, spark }: CoilIndicatorProps) {
           />
         </div>
       </div>
-      <div className="flex w-full items-center justify-between px-0.5">
+      <div className="hidden w-full items-center justify-between px-0.5 md:flex">
         <span
           className="font-data text-[8px]"
           style={{ color: charging ? "#00e7f2" : "#33414f" }}
