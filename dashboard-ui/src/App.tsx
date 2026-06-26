@@ -19,7 +19,7 @@ export default function App() {
     useEcuEngine(link);
 
   return (
-    <div className="hud-backdrop scanlines relative flex h-screen w-screen flex-col gap-2.5 overflow-hidden p-2.5 text-foreground">
+    <div className="hud-backdrop scanlines relative flex min-h-dvh w-full flex-col gap-2.5 p-2.5 text-foreground lg:h-dvh lg:overflow-hidden">
       <TopBar
         running={controls.running}
         fps={fps}
@@ -64,13 +64,13 @@ export default function App() {
             />
           </HudPanel>
 
-          <HudPanel title="Ignition Coils ×8" accent="#00e7f2" bodyClassName="grid grid-cols-8 gap-1.5">
+          <HudPanel title="Ignition Coils ×8" accent="#00e7f2" bodyClassName="grid grid-cols-4 gap-1.5 sm:grid-cols-8">
             {Array.from({ length: CYL_COUNT }).map((_, i) => (
               <CoilIndicator key={i} index={i} dwell={state.coils[i]} spark={state.coilSpark[i]} />
             ))}
           </HudPanel>
 
-          <HudPanel title="Injectors ×8" accent="#2bff88" bodyClassName="grid grid-cols-8 gap-1.5">
+          <HudPanel title="Injectors ×8" accent="#2bff88" bodyClassName="grid grid-cols-4 gap-1.5 sm:grid-cols-8">
             {Array.from({ length: CYL_COUNT }).map((_, i) => (
               <InjectorAnimation key={i} index={i} value={state.injectors[i]} />
             ))}
