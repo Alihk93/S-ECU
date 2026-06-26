@@ -2,8 +2,8 @@
  *  S-ECU  ::  Smart ECU Tester
  *  ESP32-S3 firmware backend  —  ESP-IDF v5.5.x
  *
- *  Pipeline:  1x potentiometer (throttle/load) + 3x push-buttons
- *      -> FreeRTOS input task (ADC oneshot + boxcar averaging, debounced GPIO ISR)
+ *  Pipeline:  1x potentiometer (throttle/load)  — read-only device, NO buttons/switches
+ *      -> FreeRTOS input task (ADC oneshot + boxcar averaging)
  *      -> ECU signal model (rpm rev model + analog/voltage/IAC/status channels)
  *      -> length-1 state queue (xQueueOverwrite => lock-free "always latest")
  *      -> telemetry task (30 Hz, change-detected minified JSON, see protocol.ts)
@@ -49,11 +49,6 @@
 #define POT_ADC_CHANNEL      ADC_CHANNEL_3     /* GPIO4 on ESP32-S3                  */
 #define ADC_AVG_SAMPLES      16                /* boxcar depth, kills needle jitter  */
 
-#define BTN_IGNITION_GPIO    5
-#define BTN_HEADLIGHTS_GPIO  6
-#define BTN_CHECKENG_GPIO    7
-#define DEBOUNCE_US          50000             /* 50 ms */
-
 #define LOAD_MAX_PCT         100               /* pot maps to 0..100 % throttle/load */
 #define INPUT_PERIOD_MS      20                /* 50 Hz sensor loop */
 #define TELEMETRY_HZ         30
@@ -90,45 +85,8 @@ enum {
 };
 
 static QueueHandle_t  s_state_q = NULL;  /* length-1, xQueueOverwrite snapshot */
-static QueueHandle_t  s_btn_q   = NULL;  /* button index posted from ISR        */
 static httpd_handle_t s_server  = NULL;
 static adc_oneshot_unit_handle_t s_adc = NULL;
-
-/* button-toggled latches (owned exclusively by input_task) */
-static bool s_ignition   = false;
-static bool s_headlights = false;
-static bool s_check_eng  = false;
-
-/* -------------------------------- BUTTONS --------------------------------- */
-static const gpio_num_t s_btn_gpio[] = {
-    BTN_IGNITION_GPIO, BTN_HEADLIGHTS_GPIO, BTN_CHECKENG_GPIO,
-};
-#define NUM_BTN (sizeof(s_btn_gpio) / sizeof(s_btn_gpio[0]))
-
-static void IRAM_ATTR button_isr(void *arg)
-{
-    uint32_t idx = (uint32_t)arg;
-    BaseType_t hp = pdFALSE;
-    xQueueSendFromISR(s_btn_q, &idx, &hp);     /* ISR only timestamps the event */
-    if (hp) portYIELD_FROM_ISR();
-}
-
-static void buttons_init(void)
-{
-    gpio_config_t io = {
-        .mode         = GPIO_MODE_INPUT,
-        .pull_up_en   = GPIO_PULLUP_ENABLE,
-        .pull_down_en = GPIO_PULLDOWN_DISABLE,
-        .intr_type    = GPIO_INTR_NEGEDGE,     /* active-low button to GND */
-        .pin_bit_mask = 0,
-    };
-    for (int i = 0; i < NUM_BTN; i++) io.pin_bit_mask |= (1ULL << s_btn_gpio[i]);
-    ESP_ERROR_CHECK(gpio_config(&io));
-
-    ESP_ERROR_CHECK(gpio_install_isr_service(0));
-    for (uint32_t i = 0; i < NUM_BTN; i++)
-        ESP_ERROR_CHECK(gpio_isr_handler_add(s_btn_gpio[i], button_isr, (void *)i));
-}
 
 /* ---------------------------------- ADC ----------------------------------- */
 static void adc_init(void)
@@ -186,27 +144,15 @@ static int model_status(bool run, int rpm, float load01, int iat)
 /* ------------------------------ INPUT TASK -------------------------------- */
 static void input_task(void *arg)
 {
-    int64_t last_press[NUM_BTN] = {0};
     const float dt = INPUT_PERIOD_MS / 1000.0f;
 
     while (1) {
-        /* 1. debounced buttons (ISR queued raw events; we filter bounce here)
-         *    ignition = run gate · headlights = cam ADVANCE · check-eng = cam FAULT */
-        uint32_t b;
-        while (xQueueReceive(s_btn_q, &b, 0) == pdTRUE) {
-            int64_t now = esp_timer_get_time();
-            if (now - last_press[b] < DEBOUNCE_US) continue;
-            last_press[b] = now;
-            switch (b) {
-                case 0: s_ignition   = !s_ignition;   break;
-                case 1: s_headlights = !s_headlights; break;
-                case 2: s_check_eng  = !s_check_eng;  break;
-            }
-        }
-
-        /* 2. throttle pot -> load (gated by ignition) -> rpm rev model */
-        bool  run    = s_ignition;
-        int   load   = run ? adc_read_load() : 0;            /* 0..100 % */
+        /* Read-only device: no buttons/switches. The engine is always running —
+         * it idles at minimum and revs with the throttle pot — and the cam (CMP)
+         * scope mode is fixed to sync (cm=0). */
+        /* 1. throttle pot -> load -> rpm rev model */
+        bool  run    = true;
+        int   load   = adc_read_load();                      /* 0..100 % */
         float load01 = load / 100.0f;
         int   target = run ? (RPM_IDLE + (int)(load01 * (RPM_MAX - RPM_IDLE))) : 0;
         f_rpm += (target - f_rpm) * fminf(1.0f, dt * 3.0f);  /* first-order glide */
@@ -227,7 +173,7 @@ static void input_task(void *arg)
         /* 4. IAC stepper + cam mode */
         float iac_target = run ? (rpm < 1300 ? 150.0f : 40.0f) : 90.0f;
         f_iac += (iac_target - f_iac) * fminf(1.0f, dt * 1.5f);
-        int cm = s_check_eng ? 2 : (s_headlights ? 1 : 0);   /* fault > advance > sync */
+        int cm = 0;                                          /* cam scope fixed to sync */
 
         /* 5. assemble snapshot */
         dash_state_t st = {
@@ -412,10 +358,8 @@ void app_main(void)
     ESP_ERROR_CHECK(nvs_flash_init());
 
     s_state_q = xQueueCreate(1, sizeof(dash_state_t));   /* length-1 snapshot */
-    s_btn_q   = xQueueCreate(16, sizeof(uint32_t));
 
     adc_init();
-    buttons_init();
     wifi_softap_init();
     server_start();
 
