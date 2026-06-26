@@ -21,7 +21,7 @@ export function HudPanel({
   return (
     <section className={cn("panel panel-corner rounded-sm", className)}>
       {title && (
-        <header className="flex items-center justify-between gap-2 border-b border-border/70 px-2.5 py-1 md:px-3 md:py-2">
+        <header className="flex items-center justify-between gap-2 border-b border-border/70 px-2.5 py-1 short:px-2.5 short:py-0.5 md:px-3 md:py-2">
           <div className="flex items-center gap-2">
             <span
               className="h-3 w-[3px] rounded-full"
@@ -34,7 +34,7 @@ export function HudPanel({
           {right}
         </header>
       )}
-      <div className={cn("p-1.5 md:p-3", bodyClassName)}>{children}</div>
+      <div className={cn("p-1.5 short:p-1.5 md:p-3", bodyClassName)}>{children}</div>
     </section>
   );
 }

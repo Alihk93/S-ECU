@@ -14,13 +14,13 @@ export function VoltageMeter({ def, value }: VoltageMeterProps) {
   const nomT = clamp((def.nominal - def.min) / (def.max - def.min), 0, 1);
 
   return (
-    <div className="flex flex-col gap-1 md:gap-2">
+    <div className="flex flex-col gap-1 short:gap-0.5 md:gap-2">
       <div className="flex items-baseline justify-between">
         <span className="font-display text-[9px] uppercase tracking-hud text-muted-foreground md:text-[10px]">
           {def.label}
         </span>
         <span
-          className={cn("font-data text-lg font-bold leading-none md:text-2xl")}
+          className={cn("font-data text-lg font-bold leading-none short:text-base md:text-2xl")}
           style={{ color, textShadow: `0 0 12px ${color}55` }}
         >
           {value.toFixed(2)}
@@ -43,7 +43,7 @@ export function VoltageMeter({ def, value }: VoltageMeterProps) {
           style={{ left: `${nomT * 100}%` }}
         />
       </div>
-      <div className="hidden justify-between font-data text-[9px] text-muted-foreground/60 md:flex">
+      <div className="hidden justify-between font-data text-[9px] text-muted-foreground/60 short:hidden md:flex">
         <span>{def.min}</span>
         <span>nom {def.nominal}</span>
         <span>{def.max}</span>

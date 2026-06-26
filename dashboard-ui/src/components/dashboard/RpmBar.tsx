@@ -38,22 +38,22 @@ export function RpmBar({ rpm, load = 0, segments = 40 }: RpmBarProps) {
           );
         })}
       </div>
-      <div className="flex shrink-0 items-end gap-4 leading-none md:flex-col md:items-end md:gap-0">
+      <div className="flex shrink-0 items-end gap-4 leading-none short:flex-row short:items-end short:gap-4 md:flex-col md:items-end md:gap-0">
         <div className="flex flex-col items-end">
           <div
-            className="font-data text-[20px] font-bold tabular-nums md:text-[22px]"
+            className="font-data text-[20px] font-bold tabular-nums short:text-[18px] md:text-[22px]"
             style={{ color: "#00e7f2", textShadow: "0 0 12px rgba(0,231,242,0.4)" }}
           >
             {loadPct}
             <span className="text-[13px]">%</span>
           </div>
-          <div className="font-display text-[9px] uppercase tracking-hud text-muted-foreground md:mb-2 md:text-[10px]">
+          <div className="font-display text-[9px] uppercase tracking-hud text-muted-foreground short:mb-0 md:mb-2 md:text-[10px]">
             LOAD
           </div>
         </div>
         <div className="flex flex-col items-end">
           <div
-            className="font-data text-[30px] font-bold tabular-nums md:text-[40px]"
+            className="font-data text-[30px] font-bold tabular-nums short:text-[26px] md:text-[40px]"
             style={{
               color: over ? "#ff2d55" : "#eafdff",
               textShadow: over

@@ -9,12 +9,12 @@ export function InjectorAnimation({ index, value }: InjectorProps) {
   const droplets = [0, 1, 2, 3, 4];
 
   return (
-    <div className="panel flex flex-col items-center gap-0.5 rounded-sm px-1 py-0.5 md:gap-1 md:px-1.5 md:py-2">
+    <div className="panel flex flex-col items-center gap-0.5 rounded-sm px-1 py-0.5 short:gap-0.5 short:px-1 short:py-0.5 md:gap-1 md:px-1.5 md:py-2">
       <span className="font-data text-[9px] text-muted-foreground">I{index + 1}</span>
-      <div className="relative h-6 w-6 md:h-12">
+      <div className="relative h-6 w-6 short:h-6 md:h-12">
         {/* injector body */}
         <div
-          className="absolute left-1/2 top-0 h-3 w-3 -translate-x-1/2 rounded-sm border md:h-6"
+          className="absolute left-1/2 top-0 h-3 w-3 -translate-x-1/2 rounded-sm border short:h-3 md:h-6"
           style={{
             borderColor: color,
             background: `linear-gradient(180deg, ${color}33, transparent)`,
@@ -24,11 +24,11 @@ export function InjectorAnimation({ index, value }: InjectorProps) {
         />
         {/* nozzle */}
         <div
-          className="absolute left-1/2 top-3 h-1.5 w-1 -translate-x-1/2 md:top-6"
+          className="absolute left-1/2 top-3 h-1.5 w-1 -translate-x-1/2 short:top-3 md:top-6"
           style={{ background: color }}
         />
         {/* spray cone */}
-        <div className="absolute left-1/2 top-[17px] h-4 w-6 -translate-x-1/2 overflow-hidden md:top-[30px] md:h-6">
+        <div className="absolute left-1/2 top-[17px] h-4 w-6 -translate-x-1/2 overflow-hidden short:top-[17px] short:h-4 md:top-[30px] md:h-6">
           {active &&
             droplets.map((d) => (
               <span
@@ -46,7 +46,7 @@ export function InjectorAnimation({ index, value }: InjectorProps) {
         </div>
       </div>
       <div
-        className="hidden h-1 w-full rounded-full md:block"
+        className="hidden h-1 w-full rounded-full short:hidden md:block"
         style={{
           background: `linear-gradient(90deg, ${color} ${value * 100}%, transparent ${value * 100}%)`,
           boxShadow: active ? `0 0 6px ${color}` : "none",

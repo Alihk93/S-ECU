@@ -140,7 +140,7 @@ export function WaveformScope({
 
   return (
     <div className="flex h-full flex-col">
-      <div className="mb-2 hidden items-center justify-between md:flex">
+      <div className="mb-2 hidden items-center justify-between short:hidden md:flex">
         <div className="flex items-center gap-3 font-data text-[10px] text-muted-foreground">
           <span>
             <span className="text-neon-cyan">CKP</span> 60-2

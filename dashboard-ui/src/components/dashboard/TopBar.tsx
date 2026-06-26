@@ -31,7 +31,7 @@ export function TopBar({ fps, linkStatus }: TopBarProps) {
   }, []);
 
   return (
-    <header className="panel flex items-center justify-between gap-4 rounded-sm px-4 py-2.5">
+    <header className="panel flex items-center justify-between gap-4 rounded-sm px-4 py-2.5 short:py-1">
       <div className="flex items-center gap-3">
         <div
           className="grid h-9 w-9 place-items-center rounded-sm border border-neon-cyan/50"

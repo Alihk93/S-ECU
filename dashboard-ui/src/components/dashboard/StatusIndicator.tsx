@@ -9,7 +9,7 @@ export function StatusIndicator({ def, on }: StatusIndicatorProps) {
   const color = on ? def.color : "#28333b";
   return (
     <div
-      className="panel flex items-center gap-1.5 rounded-sm px-1.5 py-0.5 leading-none md:gap-2 md:px-2.5 md:py-1.5"
+      className="panel flex items-center gap-1.5 rounded-sm px-1.5 py-0.5 leading-none short:gap-1 short:px-1.5 short:py-0.5 md:gap-2 md:px-2.5 md:py-1.5"
       style={{ borderColor: on ? `${def.color}66` : undefined }}
     >
       <span
