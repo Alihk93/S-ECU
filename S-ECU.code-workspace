@@ -9,5 +9,13 @@
 			"path": "Firmware/Smart_ECU"
 		}
 	],
-	"settings": {}
+	"settings": {
+		// "S-ECU" (repo root) already contains Firmware/Smart_ECU, which is
+		// also listed above as its own root. Hide the nested copy so the
+		// firmware shows once. The firmware root has no "Firmware" child, so
+		// this only affects the repo-root view.
+		"files.exclude": {
+			"Firmware": true
+		}
+	}
 }
