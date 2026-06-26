@@ -21,14 +21,14 @@ export function ckpSample(angleDeg: number): number {
 
 /** CMP: one cam pulse per 720° crank. mode shifts/breaks the phase for fault demo. */
 export function cmpSample(angle720: number, phaseDeg: number, mode: CmpMode): number {
+  const cycle = Math.floor(angle720 / 720); // engine-cycle index (before wrap)
   let a = ((angle720 % 720) + 720) % 720;
   let width = 90; // pulse width in crank deg
   let start = phaseDeg;
   if (mode === "advance") start = phaseDeg - 60;
   if (mode === "fault") {
-    // jittery, intermittent cam — drops some pulses
-    const drop = Math.floor(a / 720 + phaseDeg) % 3 === 0;
-    if (drop) return 0.05;
+    // jittery, intermittent cam — drops the whole pulse every 3rd engine cycle
+    if (((cycle % 3) + 3) % 3 === 0) return 0.05;
     width = 60 + 40 * Math.sin(a * 0.05);
   }
   const end = start + width;
@@ -75,8 +75,9 @@ export function deriveAnalog(rpm: number, load: number, tSec: number) {
   const map = 28 + load * 175 + rpmN * 15 + noise(2.5);
   // MAF airflow scales with rpm × load
   const maf = 3 + rpmN * load * 360 + rpmN * 25 + noise(4);
-  // IAT warms slowly, drifts with a slow sine to look alive
-  const iat = 38 + 18 * Math.sin(tSec * 0.05) + load * 14 + noise(0.6);
+  // IAT warms slowly, drifts with a slow sine to look alive. load coeff mirrors main.c:
+  // deliberately aggressive so high load crosses the FAN1 (>70) / FAN2 (>84) thresholds.
+  const iat = 38 + 18 * Math.sin(tSec * 0.05) + load * 70 + noise(0.6);
   // ECU voltage sags slightly under cranking/load, alternator ~13.8
   const ecuV = 13.8 - load * 0.5 + 0.2 * Math.sin(tSec * 0.7) + noise(0.05);
   const sensorV = 5.0 + noise(0.012);

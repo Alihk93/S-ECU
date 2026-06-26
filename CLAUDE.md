@@ -169,6 +169,9 @@ per-channel coil/injector sensing.
 3. Telemetry is display-only unless a command path is explicitly decided.
 4. No raster images — static SVG + CSS transforms only.
 5. Re-gzip the UI **before every build** (`gzip -kf -9`), or you flash a stale page.
+6. `idf.py` builds with **Ninja**; if `build/` was ever generated with Unix Makefiles
+   (e.g. by the VS Code CMake Tools extension) you hit *"generator Ninja does not match
+   ... Unix Makefiles"* — `rm -rf build` and rebuild (the dir is fully regenerable).
 
 ---
 
@@ -177,6 +180,7 @@ per-channel coil/injector sensing.
   `dashboard-ui/` React dashboard (gauges, voltages, 8 coils/8 injectors, CKP/CMP scope,
   12 status, sim console, debug panel), `protocol.ts` + `useEcuLink` WS client + live override,
   `CMakeLists.txt` / `sdkconfig.defaults`, UI embedded as `index.html.gz`.
+  RPM hero now shows a live **LOAD %** readout (the pot value, driven by `state.load`).
 - **VERIFIED (2026-06-25):** firmware builds, flashes, and boots on real ESP32-S3 (N16 R8).
   Boot log: `SoftAP up: SSID 'S-ECU' (open) -> http://10.10.10.10`, DHCP server up,
   backend running. App 1.15 MB in the 3 MB factory partition (63% free).
@@ -184,6 +188,12 @@ per-channel coil/injector sensing.
   succeeds (`WS client connected`), live telemetry streams → dashboard shows "Live · ESP".
   (Benign log noise: OS captive-portal probe resets one early `/` fetch → `error in send :104`;
   browser `/favicon.ico` → 404.)
+- **VERIFIED (2026-06-26):** rebuilt + reflashed clean after the fixes below; boots fine
+  (`SoftAP up ... http://10.10.10.10`, DHCP up, backend running). App 1.15 MB written + verified.
+  Fixes this build: live LOAD % readout (engine was emitting stale `c.load`); IAT model load
+  coeff `14→70` in `main.c` + `sim.ts` so FAN1 (>70) / FAN2 (>84) are reachable under sustained
+  load; CMP fault mode now actually drops the whole pulse every 3rd cycle (was a dead branch).
+  Contract unchanged — `iat` encoding is identical, only the model output range widened.
 - **NOT YET TESTED:** multi-client broadcast, gauge latency under load, pot→load mapping,
   button behaviour (run gate / cam advance / cam fault), every status bit — bench test pending.
 
@@ -193,6 +203,8 @@ per-channel coil/injector sensing.
 2. Wire hardware (pinout above); confirm pot maps cleanly to 0–100 % load.
 3. Bench test: SoftAP, multi-client broadcast, **Live badge** on connect, gauge latency,
    reconnect/sim-fallback, cam ADVANCE/FAULT via buttons, every status bit toggling correctly.
+   (FAN1/FAN2 now reachable: hold the pot at high load — IAT climbs past 70/84 °C.
+   START only blips during the <1 s rpm spin-up/down through 1–600.)
 4. [DONE] AP creds/IP set to spec: SSID `S-ECU`, IP `10.10.10.10` (static, DHCP server
    handing out the .x range). Pass `0000` is <8 chars so the AP is **OPEN** (WPA2 needs ≥8).
 5. (Optional) Real per-channel coil/injector sensing → add `cl`/`in` masks to the contract.
@@ -207,3 +219,5 @@ per-channel coil/injector sensing.
 - WS live drives the dashboard; auto-fallback to in-browser sim when no frames.
 - Bandwidth is not the bottleneck; fluidity = fixed 30 Hz cadence + CSS interpolation.
 - gzip-embedded single-page UI; lock-free state via length-1 queue.
+- IAT model load coefficient kept deliberately aggressive (×70) so fan thresholds are
+  reachable on the bench from the single pot; mirrored byte-for-byte in `main.c` + `sim.ts`.

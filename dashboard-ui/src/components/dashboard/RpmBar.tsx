@@ -3,10 +3,12 @@ import { clamp } from "@/lib/sim";
 
 interface RpmBarProps {
   rpm: number;
+  load?: number; // 0..1 live throttle/load (the pot on hardware)
   segments?: number;
 }
 
-export function RpmBar({ rpm, segments = 40 }: RpmBarProps) {
+export function RpmBar({ rpm, load = 0, segments = 40 }: RpmBarProps) {
+  const loadPct = Math.round(clamp(load, 0, 1) * 100);
   const t = clamp(rpm / RANGES.rpm.max, 0, 1);
   const active = Math.round(t * segments);
   const redlineSeg = Math.round((RANGES.rpm.redline / RANGES.rpm.max) * segments);
@@ -37,6 +39,16 @@ export function RpmBar({ rpm, segments = 40 }: RpmBarProps) {
         })}
       </div>
       <div className="flex shrink-0 flex-col items-end leading-none">
+        <div
+          className="font-data text-[22px] font-bold tabular-nums"
+          style={{ color: "#00e7f2", textShadow: "0 0 12px rgba(0,231,242,0.4)" }}
+        >
+          {loadPct}
+          <span className="text-[14px]">%</span>
+        </div>
+        <div className="mb-2 font-display text-[10px] uppercase tracking-hud text-muted-foreground">
+          LOAD
+        </div>
         <div
           className="font-data text-[40px] font-bold tabular-nums"
           style={{

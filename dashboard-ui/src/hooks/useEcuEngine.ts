@@ -198,7 +198,7 @@ export function useEcuEngine(link?: EcuLink) {
         lastEmit = now;
         setState({
           rpm,
-          load: c.load,
+          load,
           crankAngle: crank,
           maf,
           map,

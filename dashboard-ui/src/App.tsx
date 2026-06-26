@@ -29,7 +29,7 @@ export default function App() {
 
       {/* RPM hero */}
       <HudPanel title="Engine Speed" accent="#ff2d55" className="shrink-0">
-        <RpmBar rpm={state.rpm} />
+        <RpmBar rpm={state.rpm} load={state.load} />
       </HudPanel>
 
       {/* Main grid */}

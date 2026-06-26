@@ -218,7 +218,9 @@ static void input_task(void *arg)
         float rpmN = clampf(rpm / 7000.0f, 0.0f, 1.0f);
         int   map  = (int)clampf(28 + load01 * 175 + rpmN * 15,            0, 250);
         int   maf  = (int)clampf(3 + rpmN * load01 * 360 + rpmN * 25,      0, 400);
-        int   iat  = (int)clampf(38 + 18 * sinf(t * 0.05f) + load01 * 14, -20, 120);
+        /* load coeff is deliberately aggressive so sustained high load crosses the
+         * FAN1 (>70) / FAN2 (>84) thresholds — keeps both fan bits testable on the bench */
+        int   iat  = (int)clampf(38 + 18 * sinf(t * 0.05f) + load01 * 70, -20, 120);
         float ecuV = clampf(13.8f - load01 * 0.5f + 0.2f * sinf(t * 0.7f), 0, 25);
         int   sv   = 500;                                    /* 5.00 V sensor Vref */
 
