@@ -3,6 +3,10 @@
 		{
 			"name": "S-ECU",
 			"path": "."
+		},
+		{
+			"name": "Smart_ECU (firmware)",
+			"path": "Firmware/Smart_ECU"
 		}
 	],
 	"settings": {}

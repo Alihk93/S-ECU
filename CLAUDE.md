@@ -16,6 +16,12 @@ the device serves from its own Wi-Fi (speedo, tach, fuel, temp, warning lights).
   and `dashboard.js` in the same step.
 - After a meaningful change: note what to update in this file and give a **suggested commit message**.
 - If context is missing here or in the repo, **ask before guessing.**
+- **VS Code ESP-IDF extension:** the workspace is multi-root (`S-ECU.code-workspace`); the IDF
+  project lives in `Firmware/Smart_ECU/` (the repo root has no `CMakeLists.txt`). Select
+  **Smart_ECU (firmware)** as the active ESP-IDF project in the status bar, or the extension's
+  set-target/build/flash fail with "CMakeLists.txt not found". Terminal `idf.py` is unaffected
+  (you `cd` into the firmware dir). Also: if a shell exported `IDF_TARGET=esp32`, `set-target
+  esp32s3` errors as "not consistent with target … in the environment" — `unset IDF_TARGET`.
 
 ## Stack
 ESP32-S3 · ESP-IDF v5.5.2 · VS Code on Ubuntu · KiCad · GitHub. Firmware in C; web UI authored
