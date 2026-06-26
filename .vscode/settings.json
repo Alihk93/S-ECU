@@ -1,5 +1,11 @@
 {
     "idf.currentSetup": "/home/ali/ESP_IDF/Version_5.5.2/IDF_v5.5.2/v5.5.2/esp-idf",
+    "idf.espIdfPath": "/home/ali/ESP_IDF/Version_5.5.2/IDF_v5.5.2/v5.5.2/esp-idf",
+    "idf.toolsPath": "/home/ali/ESP_IDF/Version_5.5.2/IDF_Tool_v5.5.2",
+    "idf.pythonInstallPath": "/home/ali/ESP_IDF/Version_5.5.2/IDF_Tool_v5.5.2/python_env/idf5.5_py3.13_env/bin/python",
+    "idf.pythonBinPath": "/home/ali/ESP_IDF/Version_5.5.2/IDF_Tool_v5.5.2/python_env/idf5.5_py3.13_env/bin/python",
+    "idf.gitPath": "git",
+    "idf.adapterTargetName": "esp32s3",
     "idf.port": "/dev/ttyUSB0",
     "idf.openOcdConfigs": [
         "interface/ftdi/esp_ftdi.cfg",
