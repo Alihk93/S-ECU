@@ -98,9 +98,11 @@ CONFIG_PARTITION_TABLE_CUSTOM_FILENAME="partitions.csv"
 | Signal | GPIO | Notes |
 |--------|------|-------|
 | Throttle pot | GPIO4 | ADC1 / `ADC_CHANNEL_3`. **ADC1 only — ADC2 dies with Wi-Fi** |
-| Ignition button | GPIO5 | active-low, internal pull-up, negedge IRQ |
-| Headlights button | GPIO6 | same |
-| Check-engine button | GPIO7 | same |
+
+The device is **read-only: the throttle pot is the only physical input.** The
+three push-buttons (ignition/headlights/check-engine on GPIO5/6/7) were removed
+— the engine is always running (idles at minimum, revs with the pot) and the
+cam (CMP) scope mode is fixed to sync (`cm`=0).
 
 ---
 
@@ -141,14 +143,14 @@ per-channel coil/injector sensing.
   `.is_websocket = true`). There is **no separate `esp_websocket_server` component.**
 - **Push:** telemetry task → `httpd_queue_work()` → `httpd_ws_send_frame_async()`, broadcast to
   all clients from `httpd_get_client_list()` (filtered by `httpd_ws_get_fd_info()`).
-- **FreeRTOS:** input task on core 1 (ADC oneshot + boxcar averaging + debounced button ISR);
+- **FreeRTOS:** input task on core 1 (ADC oneshot + boxcar averaging);
   telemetry task on core 0 at **30 Hz**. Shared state is lock-free: length-1 queue +
   `xQueueOverwrite` / `xQueuePeek`.
 - **One pot = LOAD (real). rpm + all analog/digital channels are MODELLED** in firmware
   (`input_task` rev model + `model_status`), mirroring `dashboard-ui/src/lib/sim.ts` so the
   live stream matches the browser sim. To drive any channel from real hardware, add an ADC1
   channel / GPIO and replace that one assignment.
-- Buttons: ignition = run gate · headlights = cam ADVANCE (`cm`=1) · check-engine = cam FAULT (`cm`=2).
+- No buttons/switches: read-only device. Engine always running; cam mode fixed to sync (`cm`=0).
 - UI embedded **gzipped** via `EMBED_FILES`, served with `Content-Encoding: gzip`.
 - **Telemetry is display-only** (ESP → web). No command channel back.
 
@@ -195,16 +197,16 @@ per-channel coil/injector sensing.
   load; CMP fault mode now actually drops the whole pulse every 3rd cycle (was a dead branch).
   Contract unchanged — `iat` encoding is identical, only the model output range widened.
 - **NOT YET TESTED:** multi-client broadcast, gauge latency under load, pot→load mapping,
-  button behaviour (run gate / cam advance / cam fault), every status bit — bench test pending.
+  every status bit — bench test pending.
 
 ## Punchlist
 1. [DONE] `idf.py build flash` verified on hardware — `main.c` ECU model compiles clean;
    added `partitions.csv` (3 MB app) + 16 MB flash config so the UI-embedded binary fits.
 2. Wire hardware (pinout above); confirm pot maps cleanly to 0–100 % load.
 3. Bench test: SoftAP, multi-client broadcast, **Live badge** on connect, gauge latency,
-   reconnect/sim-fallback, cam ADVANCE/FAULT via buttons, every status bit toggling correctly.
-   (FAN1/FAN2 now reachable: hold the pot at high load — IAT climbs past 70/84 °C.
-   START only blips during the <1 s rpm spin-up/down through 1–600.)
+   reconnect/sim-fallback, every status bit toggling correctly.
+   (FAN1/FAN2 reachable: hold the pot at high load — IAT climbs past 70/84 °C.
+   START only blips during the <1 s rpm spin-up through 1–600 at power-on.)
 4. [DONE] AP creds/IP set to spec: SSID `S-ECU`, IP `10.10.10.10` (static, DHCP server
    handing out the .x range). Pass `0000` is <8 chars so the AP is **OPEN** (WPA2 needs ≥8).
 5. (Optional) Real per-channel coil/injector sensing → add `cl`/`in` masks to the contract.
@@ -221,3 +223,9 @@ per-channel coil/injector sensing.
 - gzip-embedded single-page UI; lock-free state via length-1 queue.
 - IAT model load coefficient kept deliberately aggressive (×70) so fan thresholds are
   reachable on the bench from the single pot; mirrored byte-for-byte in `main.c` + `sim.ts`.
+- Read-only device: the 3 push-buttons (GPIO5/6/7) were removed. Engine always runs
+  (idles → revs with the pot, the only physical input); cam mode fixed to sync (`cm`=0).
+  Tradeoff: engine-off/standby and cam advance/fault are no longer demonstrable on the bench.
+- Layout is height-aware (Tailwind `raw` screens `fit`/`short`): portrait, landscape, and
+  TV all render as a single no-scroll view — `short` (wide-but-short) is a dense no-scroll
+  grid, not a scrollable fallback.
