@@ -60,7 +60,7 @@ export default function App() {
         {/* ───────── CENTER: tachometer · CAN bus ───────── */}
         <div className="flex flex-col gap-1.5 short:col-span-4 short:min-h-0 short:gap-2 fit:col-span-4 fit:min-h-0 fit:gap-2.5">
           <HudPanel
-            title="Engine Speed · RBM"
+            title="Engine Speed · RPM"
             accent="#ff2d55"
             className="flex min-h-0 shrink-0 flex-col short:flex-1 fit:flex-1"
             bodyClassName="flex-1 min-h-0 flex"

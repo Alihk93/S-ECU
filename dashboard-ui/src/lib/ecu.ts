@@ -25,25 +25,6 @@ export const GAUGES: GaugeDef[] = [
   { key: "igf", label: "IGF", unit: "%", min: 0, max: 100, color: "#b6ff3c" },
 ];
 
-export interface VoltageDef {
-  key: VoltageKey;
-  label: string;
-  unit: string;
-  min: number;
-  max: number;
-  nominal: number;
-  color: string;
-  warnLow: number;
-  warnHigh: number;
-}
-
-export type VoltageKey = "ecuV" | "sensorV";
-
-export const VOLTAGES: VoltageDef[] = [
-  { key: "ecuV", label: "ECU VOLTAGE", unit: "V", min: 0, max: 25, nominal: 13.8, color: "#2bff88", warnLow: 11.5, warnHigh: 15.5 },
-  { key: "sensorV", label: "SENSOR VREF", unit: "V", min: 0, max: 5, nominal: 5.0, color: "#2d8bff", warnLow: 4.75, warnHigh: 5.25 },
-];
-
 export const STATUS_KEYS = [
   "battery",
   "switch",

@@ -183,7 +183,7 @@ export function Tachometer({ rpm, load }: TachometerProps) {
             {Math.round(rpm).toString().padStart(4, "0")}
           </div>
           <div className="mt-0.5 font-display text-[10px] uppercase tracking-hud text-muted-foreground">
-            RBM {over && <span className="text-neon-red">· SHIFT</span>}
+            RPM {over && <span className="text-neon-red">· SHIFT</span>}
           </div>
         </div>
         <div className="flex flex-col items-center">
