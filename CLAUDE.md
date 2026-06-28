@@ -210,8 +210,11 @@ add `cl`/`in` 8-bit masks for real per-channel coil/injector sensing.
   Layout reworked to match the hand-drawn sketch as a 3-column grid (TV + mobile):
   - **LEFT:** CKP/CMP oscilloscope · 6 analog gauges (2×3: CTS, MAF, MAP, IAT, 5V, IGF) ·
     System rail (BAT / SW ON / MRC+ / MRC−).
-  - **CENTER:** big **semicircular needle RBM tachometer** (`Tachometer.tsx`, replaced the old
-    horizontal RPM bar) · **CAN HI/LO scope** (`CanScope.tsx`).
+  - **CENTER:** big **half-circle needle RBM tachometer** (`Tachometer.tsx`, replaced the old
+    horizontal RPM bar; restyled after a classic VW/Audi cluster photo — black dished face,
+    segmented teal outer ring, red inner band + redline zone, white numbers, red sweep needle,
+    "1/min x 1000" caption; no in-gauge tell-tales; 0–8 ×1000 scale, 6500 redline unchanged) ·
+    **CAN HI/LO scope** (`CanScope.tsx`).
   - **RIGHT:** Power · ECU LED panel (`PowerDisplay.tsx` + `SevenSegDisplay.tsx`: ECU-CT current
     headline + V/A) · Ignition Coils ×8 · Injectors ×8 (port) · Status clusters
     (`StatusCluster.tsx`: ST·ETC / FPC / FAN / IMO / IAC) · **INJ GDI ×8 + HI P** rail.
@@ -257,8 +260,9 @@ add `cl`/`in` 8-bit masks for real per-channel coil/injector sensing.
   grid, not a scrollable fallback.
 - Dashboard layout matches the hand-drawn sketch: a fixed **3-column grid** (left sensors /
   center tach+CAN / right power+coils+injectors+status+GDI) on `short`/`fit`, stacked-scrollable
-  on phones. The horizontal RPM bar was replaced by a semicircular needle tach; the top-left
-  waveform was dropped from the hero in favor of this denser arrangement.
+  on phones. The horizontal RPM bar was replaced by a half-circle needle tach (styled after a
+  classic VW/Audi cluster photo, no in-gauge tell-tales); the top-left waveform was dropped from
+  the hero in favor of this denser arrangement.
 - The "8.8.8" headline LED display = **ECU self-consumption current from an external CT**
   (`cur`), not engine current. A separate plausible engine/system current (`amp`) drives the
   V/A sub-panel. Both are modelled in firmware to match the browser sim.
