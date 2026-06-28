@@ -9,14 +9,20 @@ export interface GaugeDef {
   max: number;
   color: string; // neon hex
   warn?: number; // value at/above which the gauge reads "hot"
+  decimals?: number; // fixed decimals for the digital readout (default 0)
 }
 
-export type GaugeKey = "maf" | "map" | "iat";
+export type GaugeKey = "maf" | "map" | "iat" | "cts" | "igf" | "sensorV";
 
+// Left analog cluster, laid out 2×3 to match the panel sketch:
+// CTS · MAF / MAP · IAT / 5V · IGF
 export const GAUGES: GaugeDef[] = [
+  { key: "cts", label: "CTS", unit: "°C", min: -20, max: 130, color: "#ff7a18", warn: 110 },
   { key: "maf", label: "MAF", unit: "g/s", min: 0, max: 400, color: "#00e7f2" },
   { key: "map", label: "MAP", unit: "kPa", min: 0, max: 250, color: "#9d6bff" },
   { key: "iat", label: "IAT", unit: "°C", min: -20, max: 120, color: "#ffb000", warn: 85 },
+  { key: "sensorV", label: "5V", unit: "V", min: 0, max: 6, color: "#2d8bff", decimals: 1 },
+  { key: "igf", label: "IGF", unit: "%", min: 0, max: 100, color: "#b6ff3c" },
 ];
 
 export interface VoltageDef {
@@ -87,11 +93,17 @@ export interface EcuState {
   maf: number;
   map: number;
   iat: number;
+  cts: number; // coolant temp °C
+  igf: number; // ignition feedback %
   ecuV: number;
   sensorV: number;
+  cur: number; // ECU self-consumption current (external CT), amps
+  amp: number; // engine/system current, amps
+  hip: number; // GDI high-pressure fuel rail, bar
   coils: number[]; // 8 × 0..1 dwell/spark intensity
   coilSpark: boolean[]; // 8 × momentary spark flag
-  injectors: number[]; // 8 × 0..1 injection intensity
+  injectors: number[]; // 8 × 0..1 injection intensity (port)
+  gdiInjectors: number[]; // 8 × 0..1 injection intensity (GDI bank)
   status: Record<StatusKey, number>; // 0/1
   iacStep: number; // 0..200 stepper position
 }

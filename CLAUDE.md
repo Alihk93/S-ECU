@@ -111,7 +111,7 @@ cam (CMP) scope mode is fixed to sync (`cm`=0).
 `main.c` `telemetry_task` in the same step. Minified JSON, integer-biased short keys,
 sent on change + a 0.5 s heartbeat over `ws://<host>/ws` (ESP → browser only):
 ```
-{"rpm":850,"ld":12,"maf":7,"map":52,"iat":42,"ev":1380,"sv":500,"iac":120,"st":4095,"cm":0,"cp":10}
+{"rpm":850,"ld":12,"maf":7,"map":52,"iat":42,"cts":88,"igf":97,"ev":1380,"cur":140,"amp":1820,"sv":500,"iac":120,"hip":45,"st":4095,"cm":0,"cp":10}
 ```
 | key | meaning | encoding / range |
 |-----|---------|------------------|
@@ -120,9 +120,14 @@ sent on change + a 0.5 s heartbeat over `ws://<host>/ws` (ESP → browser only):
 | `maf` | mass air flow | int g/s 0–400 |
 | `map` | manifold abs. pressure | int kPa 0–250 |
 | `iat` | intake air temp | int °C (may be negative) |
-| `ev` | ECU voltage | int volts×100 (1380 = 13.80 V) |
-| `sv` | sensor Vref | int volts×100 (500 = 5.00 V) |
+| `cts` | coolant temp | int °C (may be negative) |
+| `igf` | ignition feedback | int % 0–100 |
+| `ev` | ECU voltage | int volts×100 (1380 = 13.80 V), 0–2500 |
+| `cur` | ECU self-consumption (external CT) | int amps×100 (140 = 1.40 A), 0–2000 |
+| `amp` | engine/system current | int amps×100 (1820 = 18.20 A), 0–6000 |
+| `sv` | sensor Vref | int volts×100 (500 = 5.00 V), 0–500 |
 | `iac` | IAC stepper position | int 0–200 |
+| `hip` | GDI high-pressure fuel rail | int bar 0–250 |
 | `st` | digital status bitmask | 12-bit, bit i = `STATUS_BIT_ORDER[i]` |
 | `cm` | cam (CMP) mode for scope | 0 sync / 1 advance / 2 fault |
 | `cp` | cam phase offset | int crank deg |
@@ -130,12 +135,14 @@ sent on change + a 0.5 s heartbeat over `ws://<host>/ws` (ESP → browser only):
 Status bit order (bit 0…11): `battery, switch, start, etc, fan1, fan2, fuelPump,
 immoP, immoN, mrcP, mrcN, iac` — must match `main.c` `ST_*` enum.
 
-**Derived browser-side, NOT streamed:** the CKP/CMP oscilloscope and the 8 coil/injector
-firing animations are computed from `rpm` (+ `cm`/`cp`) in `useEcuEngine`, per the locked
-"fluidity = cadence + interpolation" decision. When the WS link is live the dashboard runs
-on real telemetry; when no frame arrives it falls back to the in-browser simulation
-(`useEcuLink` → `connectedRef`). Reserved extension: add `cl`/`in` 8-bit masks for real
-per-channel coil/injector sensing.
+**Derived browser-side, NOT streamed:** the CKP/CMP oscilloscope, the CAN HI/LO bus traces,
+and the coil / port-injector / GDI-injector firing animations are computed from `rpm`
+(+ `cm`/`cp`) in `useEcuEngine`, per the locked "fluidity = cadence + interpolation"
+decision. (Streaming a real 500 kbit/s differential CAN bus over the 30 Hz telemetry link
+is impractical, so `CanScope` animates a representative recessive/dominant frame instead.)
+When the WS link is live the dashboard runs on real telemetry; when no frame arrives it
+falls back to the in-browser simulation (`useEcuLink` → `connectedRef`). Reserved extension:
+add `cl`/`in` 8-bit masks for real per-channel coil/injector sensing.
 
 ## Firmware architecture (locked)
 - **SoftAP**, multiple simultaneous viewers supported.
@@ -160,10 +167,12 @@ per-channel coil/injector sensing.
   zero external refs).
 - **WS client** `useEcuLink`: same-origin `ws://${location.host}/ws`, exponential-backoff
   reconnect, display-only. Drops to the in-browser simulation when no frame arrives (stale > 1.5 s)
-  so the bundle also runs standalone. TopBar badge: **Live · ESP / Link… / Simulation**.
+  so the bundle also runs standalone. TopBar badge: **Live / Link… / Simulation** (a
+  connection-uptime timer ticks alongside it once live).
 - **Live override** lives in `useEcuEngine`: when `connectedRef` is true, the frame drives
-  rpm/load/analog/voltages/IAC/status/cam; the CKP/CMP scope and coil/injector firings stay
-  derived from the streamed `rpm` (+`cm`/`cp`). Gauges glide via CSS/SVG transforms at 30 Hz cadence.
+  rpm/load/analog (incl. cts/igf)/voltages/currents (cur/amp)/IAC/HI-P/status/cam; the CKP/CMP
+  scope, CAN HI/LO traces, and coil / port- + GDI-injector firings stay derived from the streamed
+  `rpm` (+`cm`/`cp`). Gauges glide via CSS/SVG transforms at 30 Hz cadence.
 
 ## Non-negotiable constraints / gotchas
 1. WebSocket server = `esp_http_server` (not a separate component).
@@ -196,8 +205,25 @@ per-channel coil/injector sensing.
   coeff `14→70` in `main.c` + `sim.ts` so FAN1 (>70) / FAN2 (>84) are reachable under sustained
   load; CMP fault mode now actually drops the whole pulse every 3rd cycle (was a dead branch).
   Contract unchanged — `iat` encoding is identical, only the model output range widened.
-- **NOT YET TESTED:** multi-client broadcast, gauge latency under load, pot→load mapping,
-  every status bit — bench test pending.
+- **VERIFIED (2026-06-28):** full dashboard redesign built, embedded, flashed, and booting on
+  hardware (`SoftAP up ... http://10.10.10.10`, DHCP up, backend running; app 1.14 MB, 64% free).
+  Layout reworked to match the hand-drawn sketch as a 3-column grid (TV + mobile):
+  - **LEFT:** CKP/CMP oscilloscope · 6 analog gauges (2×3: CTS, MAF, MAP, IAT, 5V, IGF) ·
+    System rail (BAT / SW ON / MRC+ / MRC−).
+  - **CENTER:** big **semicircular needle RBM tachometer** (`Tachometer.tsx`, replaced the old
+    horizontal RPM bar) · **CAN HI/LO scope** (`CanScope.tsx`).
+  - **RIGHT:** Power · ECU LED panel (`PowerDisplay.tsx` + `SevenSegDisplay.tsx`: ECU-CT current
+    headline + V/A) · Ignition Coils ×8 · Injectors ×8 (port) · Status clusters
+    (`StatusCluster.tsx`: ST·ETC / FPC / FAN / IMO / IAC) · **INJ GDI ×8 + HI P** rail.
+  - **Contract extended** with 5 new streamed keys — `cts, igf, cur, amp, hip` — mirrored
+    byte-for-byte in `protocol.ts` + `main.c`; CAN traces and GDI injectors are derived
+    browser-side (same pattern as CKP/CMP + coils). New SVG art for coils (`CoilIndicator.tsx`,
+    red pencil-coil) and injectors (`InjectorAnimation.tsx`, now takes a `prefix` for I/G banks).
+  - TopBar: wall-clock replaced with a connection-uptime timer; badge "Live · ESP" → "Live";
+    IDF chip removed; AP/IP/FPS contrast fixed for the light theme; AL-AYED logo + spark mark.
+  - Removed dead components: `RpmBar.tsx`, `VoltageMeter.tsx`, `StatusIndicator.tsx`.
+- **NOT YET TESTED:** on-device visual confirmation of the new layout; multi-client broadcast,
+  gauge latency under load, pot→load mapping, every status bit — bench test pending.
 
 ## Punchlist
 1. [DONE] `idf.py build flash` verified on hardware — `main.c` ECU model compiles clean;
@@ -229,3 +255,13 @@ per-channel coil/injector sensing.
 - Layout is height-aware (Tailwind `raw` screens `fit`/`short`): portrait, landscape, and
   TV all render as a single no-scroll view — `short` (wide-but-short) is a dense no-scroll
   grid, not a scrollable fallback.
+- Dashboard layout matches the hand-drawn sketch: a fixed **3-column grid** (left sensors /
+  center tach+CAN / right power+coils+injectors+status+GDI) on `short`/`fit`, stacked-scrollable
+  on phones. The horizontal RPM bar was replaced by a semicircular needle tach; the top-left
+  waveform was dropped from the hero in favor of this denser arrangement.
+- The "8.8.8" headline LED display = **ECU self-consumption current from an external CT**
+  (`cur`), not engine current. A separate plausible engine/system current (`amp`) drives the
+  V/A sub-panel. Both are modelled in firmware to match the browser sim.
+- New signals (`cts/igf/cur/amp/hip`) are streamed; CAN HI/LO and GDI injectors are derived
+  browser-side. Streaming a real 500 kbit/s CAN bus over the 30 Hz link is impractical, so the
+  CAN scope animates a representative recessive/dominant frame from `rpm` activity instead.

@@ -52,10 +52,17 @@ export function coilState(cyl: number, angle720: number): { dwell: number; spark
   return { dwell: 0, spark: false };
 }
 
-/** Injector pulse for cylinder i — opens just before its intake, width scales with load. */
-export function injectorState(cyl: number, angle720: number, load: number): number {
+/** Injector pulse for cylinder i — opens just before its intake, width scales with load.
+ *  bankOffsetDeg shifts the timing for a second (GDI) bank: GDI sprays late, near
+ *  compression, so it fires offset from the port injector. */
+export function injectorState(
+  cyl: number,
+  angle720: number,
+  load: number,
+  bankOffsetDeg = 0,
+): number {
   const order = FIRING_ORDER.indexOf(cyl + 1);
-  const openAt = (order * 720) / CYL_COUNT - 120;
+  const openAt = (order * 720) / CYL_COUNT - 120 + bankOffsetDeg;
   const widthDeg = 40 + 140 * load; // longer pulse under load
   const a = ((angle720 % 720) + 720) % 720;
   let d = a - ((openAt % 720) + 720) % 720;
@@ -81,12 +88,27 @@ export function deriveAnalog(rpm: number, load: number, tSec: number) {
   // ECU voltage sags slightly under cranking/load, alternator ~13.8
   const ecuV = 13.8 - load * 0.5 + 0.2 * Math.sin(tSec * 0.7) + noise(0.05);
   const sensorV = 5.0 + noise(0.012);
+  // Coolant warms toward operating temp; climbs a little more under sustained load.
+  const cts = 82 + load * 22 + 6 * Math.sin(tSec * 0.03) + noise(0.5);
+  // Ignition feedback health: high while running, small dip with rpm.
+  const igf = rpm > 0 ? 94 + 5 * Math.sin(tSec * 0.4) - rpmN * 2 + noise(0.6) : 0;
+  // ECU self-consumption (external CT): driver + logic load, grows with activity.
+  const cur = 0.7 + rpmN * 1.9 + load * 0.6 + noise(0.03);
+  // Engine/system current: pump + fans + coils/injectors + alternator field.
+  const amp = 6 + rpmN * 22 + load * 12 + (iat > 70 ? 8 : 0) + noise(0.2);
+  // GDI high-pressure fuel rail: low at idle, ramps hard with load.
+  const hip = 35 + load * 165 + rpmN * 12 + noise(1.5);
   return {
     map: clamp(map, 0, 250),
     maf: clamp(maf, 0, 400),
     iat: clamp(iat, -20, 120),
+    cts: clamp(cts, -20, 130),
+    igf: clamp(igf, 0, 100),
     ecuV: clamp(ecuV, 0, 25),
     sensorV: clamp(sensorV, 0, 5),
+    cur: clamp(cur, 0, 20),
+    amp: clamp(amp, 0, 60),
+    hip: clamp(hip, 0, 250),
   };
 }
 

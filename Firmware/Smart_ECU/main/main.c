@@ -70,9 +70,14 @@ typedef struct {
     int maf;         /* 0..400  g/s        */
     int map;         /* 0..250  kPa        */
     int iat;         /* deg C (may be < 0) */
+    int cts;         /* coolant deg C      */
+    int igf;         /* ign. feedback %    */
     int ev;          /* ECU volts  * 100   */
+    int cur;         /* ECU CT amps * 100  */
+    int amp;         /* engine amps * 100  */
     int sv;          /* sensor Vref * 100  */
     int iac;         /* 0..200 stepper     */
+    int hip;         /* GDI rail bar       */
     int st;          /* 12-bit status mask */
     int cm;          /* cam mode 0/1/2     */
     int cp;          /* cam phase deg      */
@@ -169,6 +174,12 @@ static void input_task(void *arg)
         int   iat  = (int)clampf(38 + 18 * sinf(t * 0.05f) + load01 * 70, -20, 120);
         float ecuV = clampf(13.8f - load01 * 0.5f + 0.2f * sinf(t * 0.7f), 0, 25);
         int   sv   = 500;                                    /* 5.00 V sensor Vref */
+        /* extended channels (mirror dashboard sim.ts deriveAnalog, sans noise) */
+        int   cts  = (int)clampf(82 + load01 * 22 + 6 * sinf(t * 0.03f),  -20, 130);
+        int   igf  = rpm > 0 ? (int)clampf(94 + 5 * sinf(t * 0.4f) - rpmN * 2, 0, 100) : 0;
+        float curA = clampf(0.7f + rpmN * 1.9f + load01 * 0.6f,            0, 20);
+        float ampA = clampf(6 + rpmN * 22 + load01 * 12 + (iat > 70 ? 8 : 0), 0, 60);
+        int   hip  = (int)clampf(35 + load01 * 165 + rpmN * 12,            0, 250);
 
         /* 4. IAC stepper + cam mode */
         float iac_target = run ? (rpm < 1300 ? 150.0f : 40.0f) : 90.0f;
@@ -182,9 +193,14 @@ static void input_task(void *arg)
             .maf  = maf,
             .map  = map,
             .iat  = iat,
+            .cts  = cts,
+            .igf  = igf,
             .ev   = (int)(ecuV * 100 + 0.5f),
+            .cur  = (int)(curA * 100 + 0.5f),
+            .amp  = (int)(ampA * 100 + 0.5f),
             .sv   = sv,
             .iac  = (int)(f_iac + 0.5f),
+            .hip  = hip,
             .st   = model_status(run, rpm, load01, iat),
             .cm   = cm,
             .cp   = 10,
@@ -241,7 +257,7 @@ static void telemetry_task(void *arg)
     dash_state_t st, last;
     memset(&last, 0xFF, sizeof(last));               /* force first send */
     int64_t last_tx = 0;
-    char buf[160];
+    char buf[256];
     const TickType_t period = pdMS_TO_TICKS(1000 / TELEMETRY_HZ);
 
     while (1) {
@@ -255,10 +271,12 @@ static void telemetry_task(void *arg)
 
         /* wire frame — see dashboard-ui/src/lib/protocol.ts (byte-for-byte) */
         int len = snprintf(buf, sizeof(buf),
-            "{\"rpm\":%d,\"ld\":%d,\"maf\":%d,\"map\":%d,\"iat\":%d,"
-            "\"ev\":%d,\"sv\":%d,\"iac\":%d,\"st\":%d,\"cm\":%d,\"cp\":%d}",
-            st.rpm, st.load, st.maf, st.map, st.iat,
-            st.ev, st.sv, st.iac, st.st, st.cm, st.cp);
+            "{\"rpm\":%d,\"ld\":%d,\"maf\":%d,\"map\":%d,\"iat\":%d,\"cts\":%d,\"igf\":%d,"
+            "\"ev\":%d,\"cur\":%d,\"amp\":%d,\"sv\":%d,\"iac\":%d,\"hip\":%d,"
+            "\"st\":%d,\"cm\":%d,\"cp\":%d}",
+            st.rpm, st.load, st.maf, st.map, st.iat, st.cts, st.igf,
+            st.ev, st.cur, st.amp, st.sv, st.iac, st.hip,
+            st.st, st.cm, st.cp);
 
         broadcast_json(buf, len);
         last = st;

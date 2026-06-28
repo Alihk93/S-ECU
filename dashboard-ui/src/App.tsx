@@ -1,56 +1,36 @@
+import { CanScope } from "@/components/dashboard/CanScope";
 import { CoilIndicator } from "@/components/dashboard/CoilIndicator";
 import { Gauge } from "@/components/dashboard/Gauge";
 import { HudPanel } from "@/components/dashboard/HudPanel";
 import { InjectorAnimation } from "@/components/dashboard/InjectorAnimation";
-import { RpmBar } from "@/components/dashboard/RpmBar";
-import { StatusIndicator } from "@/components/dashboard/StatusIndicator";
+import { PowerDisplay } from "@/components/dashboard/PowerDisplay";
+import { StatusClusters, SystemIcons } from "@/components/dashboard/StatusCluster";
+import { Tachometer } from "@/components/dashboard/Tachometer";
 import { TopBar } from "@/components/dashboard/TopBar";
-import { VoltageMeter } from "@/components/dashboard/VoltageMeter";
 import { WaveformScope } from "@/components/dashboard/WaveformScope";
 import { useEcuEngine } from "@/hooks/useEcuEngine";
 import { useEcuLink } from "@/hooks/useEcuLink";
-import { CYL_COUNT, GAUGES, STATUS_DEFS, VOLTAGES } from "@/lib/ecu";
+import { CYL_COUNT, GAUGES } from "@/lib/ecu";
+import { clamp } from "@/lib/sim";
 
 export default function App() {
   const link = useEcuLink();
   const { state, phaseRef, rpmRef, cmpRef, cmpPhaseRef, fps } = useEcuEngine(link);
+  const running = state.rpm > 0;
 
   return (
     <div className="hud-backdrop scanlines relative flex h-dvh w-full flex-col gap-1.5 overflow-hidden p-1.5 text-foreground short:gap-1.5 short:p-1.5 md:gap-2.5 md:p-2.5">
       <TopBar fps={fps} linkStatus={link.status} />
 
-      {/* RPM hero */}
-      <HudPanel title="Engine Speed" accent="#ff2d55" className="shrink-0">
-        <RpmBar rpm={state.rpm} load={state.load} />
-      </HudPanel>
-
-      {/* Main grid — stacked (portrait/landscape phone); fit (wide+tall): gauges left, scope cluster right */}
-      <div className="flex min-h-0 flex-1 flex-col gap-1.5 short:grid short:grid-cols-12 short:grid-rows-1 short:gap-2 fit:grid fit:grid-cols-12 fit:grid-rows-1 fit:gap-2.5">
-        {/* Left: gauges + voltages */}
-        <div className="flex shrink-0 flex-col gap-1.5 short:col-span-4 short:min-h-0 short:shrink short:gap-2 fit:col-span-4 fit:min-h-0 fit:shrink fit:gap-2.5">
+      {/* Main grid — stacked & scrollable on phones; locked 3-column no-scroll on
+          wide/short (landscape) and fit (wide+tall / TV) to match the layout sketch. */}
+      <main className="flex min-h-0 flex-1 flex-col gap-1.5 overflow-y-auto pr-0.5 short:grid short:grid-cols-12 short:grid-rows-1 short:gap-2 short:overflow-hidden short:pr-0 fit:grid fit:grid-cols-12 fit:grid-rows-1 fit:gap-2.5 fit:overflow-hidden fit:pr-0">
+        {/* ───────── LEFT: scope · analog gauges · system rail ───────── */}
+        <div className="flex flex-col gap-1.5 short:col-span-3 short:min-h-0 short:gap-2 fit:col-span-3 fit:min-h-0 fit:gap-2.5">
           <HudPanel
-            title="Analog Sensors"
-            accent="#00e7f2"
-            className="flex min-h-0 flex-1 flex-col"
-            bodyClassName="grid h-[64px] grid-cols-3 grid-rows-1 gap-1 overflow-hidden short:h-auto short:min-h-0 short:flex-1 short:grid-cols-3 short:grid-rows-1 fit:h-auto fit:min-h-0 fit:flex-1 fit:grid-cols-1 fit:grid-rows-3"
-          >
-            {GAUGES.map((g) => (
-              <Gauge key={g.key} def={g} value={state[g.key]} />
-            ))}
-          </HudPanel>
-          <HudPanel title="Voltage Rails" accent="#2bff88" className="shrink-0" bodyClassName="grid grid-cols-2 gap-x-3 gap-y-1 short:gap-x-2 short:gap-y-0.5 fit:grid-cols-1 fit:gap-2">
-            {VOLTAGES.map((v) => (
-              <VoltageMeter key={v.key} def={v} value={state[v.key]} />
-            ))}
-          </HudPanel>
-        </div>
-
-        {/* Right: scope spans the top; coils + injectors sit side-by-side beneath in landscape */}
-        <div className="flex min-h-0 flex-1 flex-col gap-1.5 short:col-span-8 short:grid short:min-h-0 short:grid-cols-2 short:grid-rows-[1fr_auto] short:gap-2 fit:col-span-8 fit:gap-2.5">
-          <HudPanel
-            title="Signal Oscilloscope · CKP / CMP1 / CMP2"
+            title="Oscilloscope · CKP / CMP1 / CMP2"
             accent="#ff36c8"
-            className="flex min-h-0 flex-1 flex-col short:col-span-2 short:row-start-1"
+            className="flex min-h-0 shrink-0 flex-col short:flex-1 fit:flex-1"
             bodyClassName="flex-1 min-h-0"
           >
             <WaveformScope
@@ -61,26 +41,94 @@ export default function App() {
             />
           </HudPanel>
 
-          <HudPanel title="Ignition Coils ×8" accent="#00e7f2" className="shrink-0 short:col-start-1 short:row-start-2" bodyClassName="grid grid-cols-8 gap-1 sm:gap-1.5">
+          <HudPanel
+            title="Analog Sensors"
+            accent="#00e7f2"
+            className="flex min-h-0 shrink-0 flex-col short:flex-1 fit:flex-1"
+            bodyClassName="grid min-h-0 flex-1 grid-cols-2 grid-rows-3 gap-1 short:gap-1.5 md:gap-2"
+          >
+            {GAUGES.map((g) => (
+              <Gauge key={g.key} def={g} value={state[g.key]} />
+            ))}
+          </HudPanel>
+
+          <HudPanel title="System" accent="#2bff88" className="shrink-0">
+            <SystemIcons status={state.status} className="flex items-start justify-around gap-2" />
+          </HudPanel>
+        </div>
+
+        {/* ───────── CENTER: tachometer · CAN bus ───────── */}
+        <div className="flex flex-col gap-1.5 short:col-span-4 short:min-h-0 short:gap-2 fit:col-span-4 fit:min-h-0 fit:gap-2.5">
+          <HudPanel
+            title="Engine Speed · RBM"
+            accent="#ff2d55"
+            className="flex min-h-0 shrink-0 flex-col short:flex-1 fit:flex-1"
+            bodyClassName="flex-1 min-h-0 flex"
+          >
+            <Tachometer rpm={state.rpm} load={state.load} />
+          </HudPanel>
+
+          <HudPanel
+            title="CAN Bus · HI / LO"
+            accent="#00e7f2"
+            className="flex min-h-0 shrink-0 flex-col short:h-[34%] fit:h-[34%]"
+            bodyClassName="flex-1 min-h-0"
+          >
+            <CanScope active={running} />
+          </HudPanel>
+        </div>
+
+        {/* ───────── RIGHT: power · coils · injectors · status · GDI ───────── */}
+        <div className="flex flex-col gap-1.5 short:col-span-5 short:min-h-0 short:gap-2 fit:col-span-5 fit:min-h-0 fit:gap-2.5">
+          <HudPanel title="Power · ECU" accent="#2bff88" className="shrink-0">
+            <PowerDisplay cur={state.cur} ecuV={state.ecuV} amp={state.amp} />
+          </HudPanel>
+
+          <HudPanel title="Ignition Coils ×8" accent="#ff2d3a" className="shrink-0" bodyClassName="grid grid-cols-8 gap-1 sm:gap-1.5">
             {Array.from({ length: CYL_COUNT }).map((_, i) => (
               <CoilIndicator key={i} index={i} dwell={state.coils[i]} spark={state.coilSpark[i]} />
             ))}
           </HudPanel>
 
-          <HudPanel title="Injectors ×8" accent="#2bff88" className="shrink-0 short:col-start-2 short:row-start-2" bodyClassName="grid grid-cols-8 gap-1 sm:gap-1.5">
+          <HudPanel title="Injectors ×8" accent="#29c2ff" className="shrink-0" bodyClassName="grid grid-cols-8 gap-1 sm:gap-1.5">
             {Array.from({ length: CYL_COUNT }).map((_, i) => (
-              <InjectorAnimation key={i} index={i} value={state.injectors[i]} />
+              <InjectorAnimation key={i} index={i} value={state.injectors[i]} prefix="I" />
+            ))}
+          </HudPanel>
+
+          <HudPanel title="Status" accent="#9d6bff" className="shrink-0">
+            <StatusClusters
+              status={state.status}
+              iacStep={state.iacStep}
+              className="grid grid-cols-5 gap-1.5"
+            />
+          </HudPanel>
+
+          <HudPanel title="INJ GDI ×8" accent="#29c2ff" className="shrink-0" bodyClassName="grid grid-cols-9 items-stretch gap-1 sm:gap-1.5">
+            {/* HI P — GDI high-pressure fuel rail */}
+            <div className="panel flex flex-col items-center justify-center gap-0.5 rounded-sm px-1 py-1">
+              <span className="font-display text-[9px] uppercase tracking-hud text-muted-foreground">HI&nbsp;P</span>
+              <span className="font-data text-base font-bold leading-none" style={{ color: "#06435a" }}>
+                {Math.round(state.hip)}
+              </span>
+              <span className="font-data text-[8px] text-muted-foreground">bar</span>
+              <div className="h-1 w-full overflow-hidden rounded-full bg-secondary">
+                <div
+                  className="h-full rounded-full"
+                  style={{
+                    width: `${clamp(state.hip / 250, 0, 1) * 100}%`,
+                    background: "#ff7a18",
+                    boxShadow: "0 0 6px #ff7a18",
+                  }}
+                />
+              </div>
+            </div>
+            {Array.from({ length: CYL_COUNT }).map((_, i) => (
+              <InjectorAnimation key={i} index={i} value={state.gdiInjectors[i]} prefix="G" />
             ))}
           </HudPanel>
         </div>
-      </div>
-
-      {/* Status strip */}
-      <HudPanel title="Digital Status · 12 Channels" accent="#9d6bff" className="shrink-0" bodyClassName="grid grid-cols-6 gap-1 short:grid-cols-12 short:gap-1 sm:grid-cols-4 sm:gap-1.5 md:grid-cols-6 xl:grid-cols-12">
-        {STATUS_DEFS.map((s) => (
-          <StatusIndicator key={s.key} def={s} on={!!state.status[s.key]} />
-        ))}
-      </HudPanel>
+      </main>
     </div>
   );
 }

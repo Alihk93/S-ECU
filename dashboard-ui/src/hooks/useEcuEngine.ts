@@ -25,11 +25,17 @@ export function useEcuEngine(link?: EcuLink) {
     maf: 0,
     map: 0,
     iat: 0,
+    cts: 0,
+    igf: 0,
     ecuV: 0,
     sensorV: 0,
+    cur: 0,
+    amp: 0,
+    hip: 0,
     coils: Array(CYL_COUNT).fill(0),
     coilSpark: Array(CYL_COUNT).fill(false),
     injectors: Array(CYL_COUNT).fill(0),
+    gdiInjectors: Array(CYL_COUNT).fill(0),
     status: emptyStatus(),
     iacStep: 0,
   }));
@@ -70,19 +76,27 @@ export function useEcuEngine(link?: EcuLink) {
       const maf = live ? live.maf : 0;
       const map = live ? live.map : 0;
       const iat = live ? live.iat : 0;
+      const cts = live ? live.cts : 0;
+      const igf = live ? live.igf : 0;
       const ecuV = live ? live.ecuV : 0;
       const sensorV = live ? live.sensorV : 0;
+      const cur = live ? live.cur : 0;
+      const amp = live ? live.amp : 0;
+      const hip = live ? live.hip : 0;
 
-      // Coils/injectors are derived from crank angle (firing order); per the locked
-      // contract they are NOT streamed.
+      // Coils/injectors (port + GDI bank) are derived from crank angle (firing order);
+      // per the locked contract they are NOT streamed. GDI sprays late (near
+      // compression) so its bank is offset 360° from the port injectors.
       const coils: number[] = [];
       const coilSpark: boolean[] = [];
       const injectors: number[] = [];
+      const gdiInjectors: number[] = [];
       for (let i = 0; i < CYL_COUNT; i++) {
         const cs = coilState(i, crank);
         coils.push(rpm > 0 ? cs.dwell : 0);
         coilSpark.push(rpm > 0 && cs.spark);
         injectors.push(rpm > 0 ? injectorState(i, crank, load) : 0);
+        gdiInjectors.push(rpm > 0 ? injectorState(i, crank, load, 360) : 0);
       }
 
       // Cam (CMP) mode + phase for the scope come straight off the frame.
@@ -118,11 +132,17 @@ export function useEcuEngine(link?: EcuLink) {
           maf,
           map,
           iat,
+          cts,
+          igf,
           ecuV,
           sensorV,
+          cur,
+          amp,
+          hip,
           coils,
           coilSpark,
           injectors,
+          gdiInjectors,
           status,
           iacStep: iac,
         });

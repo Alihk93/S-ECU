@@ -121,9 +121,9 @@ export function Gauge({ def, value }: GaugeProps) {
       <div className="-mt-12 flex flex-col items-center">
         <div
           className="font-data text-[30px] font-bold leading-none"
-          style={{ color, textShadow: `0 0 14px ${color}66` }}
+          style={{ color: hot ? "#ff2d55" : "#06192b", textShadow: "none" }}
         >
-          {value.toFixed(def.key === "iat" ? 0 : 0)}
+          {value.toFixed(def.decimals ?? 0)}
         </div>
         <div className="mt-1 font-display text-[10px] uppercase tracking-hud text-muted-foreground">
           {def.label} <span className="text-foreground/40">· {def.unit}</span>
