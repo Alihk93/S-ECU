@@ -121,7 +121,12 @@ export function Gauge({ def, value }: GaugeProps) {
       <div className="-mt-12 flex flex-col items-center">
         <div
           className="font-data text-[30px] font-bold leading-none"
-          style={{ color: hot ? "#ff2d55" : "#06192b", textShadow: "none" }}
+          style={{
+            color: hot ? "#ff2d55" : "#eaf7ff",
+            textShadow: hot
+              ? "0 0 14px rgba(255,45,85,0.45)"
+              : `0 0 12px ${def.color}55`,
+          }}
         >
           {value.toFixed(def.decimals ?? 0)}
         </div>

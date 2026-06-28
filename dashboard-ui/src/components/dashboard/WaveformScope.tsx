@@ -10,9 +10,9 @@ interface ScopeProps {
 }
 
 const LANES = [
-  { key: "ckp", label: "CKP", color: "#00e7f2", fn: (a: number) => ckpSample(a) },
-  { key: "cmp1", label: "CMP1", color: "#ff36c8", fn: null },
-  { key: "cmp2", label: "CMP2", color: "#2bff88", fn: null },
+  { key: "ckp", label: "CKP", color: "#00e7f2" },
+  { key: "cmp1", label: "CMP1", color: "#ff36c8" },
+  { key: "cmp2", label: "CMP2", color: "#2bff88" },
 ] as const;
 
 export function WaveformScope({

@@ -60,7 +60,7 @@ export default function App() {
         {/* ───────── CENTER: tachometer · CAN bus ───────── */}
         <div className="flex flex-col gap-1.5 short:col-span-4 short:min-h-0 short:gap-2 fit:col-span-4 fit:min-h-0 fit:gap-2.5">
           <HudPanel
-            title="Engine Speed · RBM"
+            title="Engine Speed · RPM"
             accent="#ff2d55"
             className="flex min-h-0 shrink-0 flex-col short:flex-1 fit:flex-1"
             bodyClassName="flex-1 min-h-0 flex"
@@ -108,7 +108,7 @@ export default function App() {
             {/* HI P — GDI high-pressure fuel rail */}
             <div className="panel flex flex-col items-center justify-center gap-0.5 rounded-sm px-1 py-1">
               <span className="font-display text-[9px] uppercase tracking-hud text-muted-foreground">HI&nbsp;P</span>
-              <span className="font-data text-base font-bold leading-none" style={{ color: "#06435a" }}>
+              <span className="font-data text-base font-bold leading-none" style={{ color: "#ff9a4d" }}>
                 {Math.round(state.hip)}
               </span>
               <span className="font-data text-[8px] text-muted-foreground">bar</span>
