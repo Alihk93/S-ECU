@@ -116,7 +116,7 @@ function SparkMark() {
       <path
         d="M2,24 H40 V38 H50 V6 C54,6 56,24 66,24 H118"
         fill="none"
-        stroke="#6f95a3"
+        stroke="#16323f"
         strokeWidth="2.4"
         strokeLinecap="round"
         strokeLinejoin="round"
@@ -134,7 +134,7 @@ function SparkMark() {
       {/* end caps */}
       <path
         d="M2,18 V30 M118,18 V30"
-        stroke="#6f95a3"
+        stroke="#16323f"
         strokeWidth="2"
         strokeLinecap="round"
       />
@@ -159,12 +159,12 @@ function Chip({
 }) {
   const color =
     tone === "good"
-      ? "#2bff88"
+      ? "#0a7a3f"
       : tone === "warn"
-        ? "#ffb000"
+        ? "#a85f00"
         : tone === "bad"
-          ? "#ff3b5c"
-          : "#7fe7ff";
+          ? "#c01030"
+          : "#06435a";
   return (
     <span className="flex items-center gap-1 rounded-sm border border-border bg-secondary/60 px-2 py-1">
       {icon && <span className="text-foreground/70">{icon}</span>}

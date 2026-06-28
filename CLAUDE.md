@@ -225,23 +225,18 @@ add `cl`/`in` 8-bit masks for real per-channel coil/injector sensing.
   - TopBar: wall-clock replaced with a connection-uptime timer; badge "Live · ESP" → "Live";
     IDF chip removed; AP/IP/FPS contrast fixed for the light theme; AL-AYED logo + spark mark.
   - Removed dead components: `RpmBar.tsx`, `VoltageMeter.tsx`, `StatusIndicator.tsx`.
-- **2026-06-28 (design + cleanup pass — built clean, bundle re-embedded; NOT yet on-device):**
-  full code scan + a modern re-theme. Contract untouched (`protocol.ts` + `main.c` serializer
-  unchanged), so no firmware-logic edit was required — only the embedded UI was rebuilt.
-  - **Theme:** moved off the light steel-blue background (whose dark scopes/LED panels/gauges
-    looked pasted on) to a cohesive deep **"carbon" dark cockpit** — near-black blue-charcoal
-    base, glassy translucent panels (`backdrop-filter`), layered neon-aurora backdrop, brighter
-    neon readouts. Tuned every hard-coded readout colour that was set for the old light bg
-    (Tachometer rpm/load, `Gauge` value, `App` HI-P, `TopBar` chips + logo trace, coil ± labels).
-    `index.html` now sets `theme-color`/`color-scheme` dark + `viewport-fit=cover`.
+- **2026-06-28 (code-scan + cleanup pass — built clean, bundle re-embedded; NOT yet on-device):**
+  full code scan; **colours/theme kept as the original light steel-blue by request** (a dark
+  "carbon" re-theme was prototyped then reverted — the original palette stays). Contract
+  untouched (`protocol.ts` + `main.c` serializer unchanged); only the embedded UI was rebuilt.
   - **Bug fix:** the tach readout + centre panel title read **"RBM"** — corrected to **"RPM"**
     (the gauge caption is literally "1/min × 1000"). Fixed in `Tachometer.tsx`, `App.tsx`, docs.
   - **Dead code removed:** `sim.ts` `deriveAnalog`/`noise`/`lerp` (no browser sim anymore — the
     engine zeroes when offline); `ecu.ts` `VOLTAGES`/`VoltageDef`/`VoltageKey` (VoltageMeter is
     gone); dead `fn` field in `WaveformScope` `LANES`; orphan Vite-template files `src/App.css`,
     `src/assets/{hero.png,react.svg,vite.svg}`. `tsc -b`, `vite build`, `oxlint` all clean.
-- **NOT YET TESTED:** on-device visual confirmation of the new dark theme + layout; multi-client
-  broadcast, gauge latency under load, pot→load mapping, every status bit — bench test pending.
+- **NOT YET TESTED:** on-device visual confirmation of the layout; multi-client broadcast,
+  gauge latency under load, pot→load mapping, every status bit — bench test pending.
 
 ## Punchlist
 1. [DONE] `idf.py build flash` verified on hardware — `main.c` ECU model compiles clean;
@@ -285,6 +280,6 @@ add `cl`/`in` 8-bit masks for real per-channel coil/injector sensing.
 - New signals (`cts/igf/cur/amp/hip`) are streamed; CAN HI/LO and GDI injectors are derived
   browser-side. Streaming a real 500 kbit/s CAN bus over the 30 Hz link is impractical, so the
   CAN scope animates a representative recessive/dominant frame from `rpm` activity instead.
-- Theme is a deep **dark "carbon" cockpit** (not the earlier light steel-blue): the scopes,
-  LED panels and gauges are inherently dark, so a dark base reads as one cohesive cluster and
-  lets the neon accents carry the signal. Readout text colours are tuned light-on-dark.
+- Theme/colours stay the **original light steel-blue** (a dark "carbon" cockpit was prototyped
+  then reverted by request): light panels, dark scopes/LED panels, neon accents, dark readout
+  text tuned for the light background.

@@ -108,7 +108,7 @@ export default function App() {
             {/* HI P — GDI high-pressure fuel rail */}
             <div className="panel flex flex-col items-center justify-center gap-0.5 rounded-sm px-1 py-1">
               <span className="font-display text-[9px] uppercase tracking-hud text-muted-foreground">HI&nbsp;P</span>
-              <span className="font-data text-base font-bold leading-none" style={{ color: "#ff9a4d" }}>
+              <span className="font-data text-base font-bold leading-none" style={{ color: "#06435a" }}>
                 {Math.round(state.hip)}
               </span>
               <span className="font-data text-[8px] text-muted-foreground">bar</span>
