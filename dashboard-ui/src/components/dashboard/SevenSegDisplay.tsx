@@ -27,7 +27,7 @@ const SEG_RECT: Record<string, [number, number, number, number]> = {
 };
 
 const DIGIT_W = 21;
-const DOT_W = 7;
+const DOT_W = 6;
 const H = 34;
 
 interface SevenSegDisplayProps {
