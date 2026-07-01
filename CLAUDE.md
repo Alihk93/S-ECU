@@ -312,6 +312,16 @@ add `cl`/`in` 8-bit masks for real per-channel coil/injector sensing.
     replacing the fuel-pump/fan/immobilizer/IAC part-drawings. LED colours on the refreshed palette.
   - `HudPanel.tsx` — cleaner header (larger title, rounded pill accent, more body padding).
   - Suggested commit: `feat(ui): digital EV-cluster redesign — radial gauges, unified indicator tiles`.
+- **UPDATED (2026-07-01, analog tach per user reference photo):** `Tachometer.tsx` rewritten again —
+  the EV arc was swapped for a **classic analog cluster tach** matching a user-supplied VW/Audi-style
+  photo: round black dished radial-gradient face, **blue segmented outer ring** with a red redline
+  zone, white 0–8 numbers + major/minor ticks, a **red sweep needle** + hub, and a cluster of centre
+  **warning tell-tale lamps** (high-beam blue; coolant-temp / battery / oil / brake red — currently
+  **decorative**, not wired to status) with the **"1/min x 1000"** caption. A compact
+  `<rpm> rpm · <load>%` line under the caption preserves the digital rpm + LOAD readout. Scale/values
+  unchanged (0–8 ×1000, 6500 redline); frontend-only, contract untouched. Rebuilt + re-embedded
+  (`index.html.gz` 331713 B). Open item: wire the tell-tales to live data if wanted (coolant→CTS
+  warn, battery→status bit). Suggested commit: `feat(ui): analog cluster tachometer (needle + tell-tales)`.
 - **TRIED & REVERTED (2026-07-01, on-device cover):** briefly flashed a two-route build — animated
   cover at `/` + dashboard at `/app` (cover launches `<iframe src="/app">` same-origin to keep WS
   live). On hardware this was **unstable**: the dashboard flickered/reconnected ~once a second
