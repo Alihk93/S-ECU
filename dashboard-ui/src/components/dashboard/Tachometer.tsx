@@ -2,27 +2,28 @@ import { useMemo } from "react";
 import { RANGES } from "@/lib/ecu";
 import { clamp } from "@/lib/sim";
 
-// Half-circle automotive tachometer styled after a classic VW/Audi cluster:
-// black dished face, segmented teal outer ring, red inner band + redline,
-// white numbers and a red sweep needle. Scale/values are unchanged.
+// Modern digital-cluster tachometer: a bold 270° arc with a glowing rpm sweep
+// (red past the redline), an inner LOAD arc, numeric ×1000 labels and a huge
+// centered rpm readout. Scale/values unchanged (0–8 ×1000, 6500 redline).
 
-const START = 180; // deg — left (0)
-const SWEEP = 180; // deg — clockwise over the top to the right (max)
-const CX = 120;
-const CY = 126;
-const R = 96; // tick baseline radius
-const MAX_K = 8; // full-scale ×1000
+const START = 135;
+const SWEEP = 270;
+const CX = 50;
+const CY = 47;
+const R = 41; // rpm arc radius
+const RL = 30; // load arc radius
+const MAX_K = 8;
 
-function polar(angleDeg: number, r: number) {
+function pt(angleDeg: number, r: number): [number, number] {
   const a = (angleDeg * Math.PI) / 180;
-  return { x: CX + r * Math.cos(a), y: CY + r * Math.sin(a) };
+  return [CX + r * Math.cos(a), CY + r * Math.sin(a)];
 }
 
 function arcPath(fromDeg: number, toDeg: number, r: number) {
-  const s = polar(fromDeg, r);
-  const e = polar(toDeg, r);
+  const [x1, y1] = pt(fromDeg, r);
+  const [x2, y2] = pt(toDeg, r);
   const large = toDeg - fromDeg > 180 ? 1 : 0;
-  return `M ${s.x} ${s.y} A ${r} ${r} 0 ${large} 1 ${e.x} ${e.y}`;
+  return `M ${x1} ${y1} A ${r} ${r} 0 ${large} 1 ${x2} ${y2}`;
 }
 
 interface TachometerProps {
@@ -33,70 +34,34 @@ interface TachometerProps {
 export function Tachometer({ rpm, load }: TachometerProps) {
   const maxRpm = MAX_K * 1000;
   const t = clamp(rpm / maxRpm, 0, 1);
-  const angle = START + t * SWEEP;
+  const lt = clamp(load, 0, 1);
   const over = rpm >= RANGES.rpm.redline;
   const redlineT = RANGES.rpm.redline / maxRpm;
-  const loadPct = Math.round(clamp(load, 0, 1) * 100);
-  // Needle endpoints computed directly (avoids CSS transform-origin ambiguity on <g>).
-  const needleTip = polar(angle, R + 8); // reach out past the numbers to the tick ring
-  const needleTail = polar(angle + 180, 22); // short counterweight stub
+  const loadPct = Math.round(lt * 100);
+  const rpmColor = over ? "#fb5566" : "#22d3ee";
 
-  const ticks = useMemo(() => {
-    const arr: {
-      x1: number; y1: number; x2: number; y2: number;
-      major: boolean; lx?: number; ly?: number; label?: string; red?: boolean;
-    }[] = [];
-    const N = MAX_K * 2; // half-unit minor ticks
-    for (let i = 0; i <= N; i++) {
-      const f = i / N;
-      const ang = START + f * SWEEP;
-      const major = i % 2 === 0;
-      const red = f >= redlineT;
-      const outer = polar(ang, R);
-      const inner = polar(ang, major ? R - 13 : R - 7);
-      const tk: (typeof arr)[number] = {
-        x1: outer.x, y1: outer.y, x2: inner.x, y2: inner.y, major, red,
-      };
-      if (major) {
-        const lp = polar(ang, R - 26);
-        tk.lx = lp.x;
-        tk.ly = lp.y;
-        tk.label = String(i / 2);
-      }
-      arr.push(tk);
-    }
-    return arr;
-  }, [redlineT]);
+  const track = arcPath(START, START + SWEEP, R);
 
-  // segmented teal outer ring (radial bars, red over the redline)
-  const segs = useMemo(() => {
-    const arr: { x1: number; y1: number; x2: number; y2: number; red: boolean }[] = [];
-    const N = 40;
-    for (let i = 0; i <= N; i++) {
-      const f = i / N;
-      const ang = START + f * SWEEP;
-      const o = polar(ang, 112);
-      const inn = polar(ang, 103);
-      arr.push({ x1: o.x, y1: o.y, x2: inn.x, y2: inn.y, red: f >= redlineT });
+  const labels = useMemo(() => {
+    const arr: { x: number; y: number; n: number; red: boolean }[] = [];
+    for (let i = 0; i <= MAX_K; i++) {
+      const f = i / MAX_K;
+      const [x, y] = pt(START + f * SWEEP, R - 9);
+      arr.push({ x, y, n: i, red: f >= redlineT });
     }
     return arr;
   }, [redlineT]);
 
   return (
-    <div className="flex h-full min-h-0 w-full flex-col items-center justify-center overflow-hidden">
+    <div className="flex h-full min-h-0 w-full items-center justify-center overflow-hidden">
       <svg
-        viewBox="0 0 240 150"
+        viewBox="0 0 100 96"
         preserveAspectRatio="xMidYMid meet"
-        className="h-full max-h-[320px] w-full min-h-0"
+        className="h-full max-h-[420px] w-full min-h-0"
       >
         <defs>
-          <radialGradient id="tach-face" cx="50%" cy="78%" r="78%">
-            <stop offset="0%" stopColor="#0c1216" />
-            <stop offset="70%" stopColor="#05090c" />
-            <stop offset="100%" stopColor="#010406" />
-          </radialGradient>
           <filter id="tach-glow" x="-30%" y="-30%" width="160%" height="160%">
-            <feGaussianBlur stdDeviation="2.4" result="b" />
+            <feGaussianBlur stdDeviation="1.8" result="b" />
             <feMerge>
               <feMergeNode in="b" />
               <feMergeNode in="SourceGraphic" />
@@ -104,92 +69,114 @@ export function Tachometer({ rpm, load }: TachometerProps) {
           </filter>
         </defs>
 
-        {/* bezel + black dished half-disc face */}
-        <path d={`M ${CX - 117} ${CY} A 117 117 0 0 1 ${CX + 117} ${CY} Z`} fill="#0a0f12" stroke="#243038" strokeWidth={3} />
-        <path d={`M ${CX - 114} ${CY} A 114 114 0 0 1 ${CX + 114} ${CY} Z`} fill="url(#tach-face)" />
-
-        {/* segmented teal outer ring */}
-        {segs.map((s, i) => (
-          <line
-            key={i}
-            x1={s.x1} y1={s.y1} x2={s.x2} y2={s.y2}
-            stroke={s.red ? "#ff2d3a" : "#2bb6d8"}
-            strokeWidth={2.4}
+        {/* rpm track + redline zone */}
+        <path d={track} fill="none" stroke="#132a41" strokeWidth={6.5} strokeLinecap="round" />
+        <path
+          d={arcPath(START + redlineT * SWEEP, START + SWEEP, R)}
+          fill="none"
+          stroke="#5b1620"
+          strokeWidth={6.5}
+          strokeLinecap="round"
+        />
+        {/* rpm progress sweep */}
+        {t > 0.005 && (
+          <path
+            d={track}
+            fill="none"
+            stroke={rpmColor}
+            strokeWidth={6.5}
             strokeLinecap="round"
-            opacity={s.red ? 0.95 : 0.85}
+            pathLength={100}
+            strokeDasharray={`${t * 100} 100`}
+            filter="url(#tach-glow)"
+            style={{ transition: "stroke-dasharray 90ms linear" }}
           />
+        )}
+
+        {/* inner LOAD arc */}
+        <path d={arcPath(START, START + SWEEP, RL)} fill="none" stroke="#102438" strokeWidth={2.6} />
+        {lt > 0.005 && (
+          <path
+            d={arcPath(START, START + SWEEP, RL)}
+            fill="none"
+            stroke="#2bd4c0"
+            strokeWidth={2.6}
+            strokeLinecap="round"
+            pathLength={100}
+            strokeDasharray={`${lt * 100} 100`}
+            style={{ transition: "stroke-dasharray 90ms linear" }}
+          />
+        )}
+
+        {/* ×1000 numeric labels */}
+        {labels.map((l) => (
+          <text
+            key={l.n}
+            x={l.x}
+            y={l.y}
+            fill={l.red ? "#fb5566" : "#9fb6c9"}
+            fontSize="5"
+            fontWeight="700"
+            textAnchor="middle"
+            dominantBaseline="central"
+            fontFamily="'JetBrains Mono', monospace"
+          >
+            {l.n}
+          </text>
         ))}
 
-        {/* red inner band + brighter redline zone */}
-        <path d={arcPath(START, START + SWEEP, R + 2)} fill="none" stroke="#5e0e16" strokeWidth={5} opacity={0.9} />
-        <path d={arcPath(START + redlineT * SWEEP, START + SWEEP, R + 2)} fill="none" stroke="#ff2d3a" strokeWidth={5} />
-
-        {/* ticks + numbers */}
-        {ticks.map((tk, i) => (
-          <g key={i}>
-            <line
-              x1={tk.x1} y1={tk.y1} x2={tk.x2} y2={tk.y2}
-              stroke={tk.red ? "#ff5260" : tk.major ? "#eef6f9" : "#8fa3ad"}
-              strokeWidth={tk.major ? 2 : 1}
-            />
-            {tk.label && (
-              <text
-                x={tk.lx} y={tk.ly}
-                fill={tk.red ? "#ff5260" : "#eef6f9"}
-                fontSize="15" fontWeight="700"
-                textAnchor="middle" dominantBaseline="central"
-                fontFamily="'JetBrains Mono', monospace"
-              >
-                {tk.label}
-              </text>
-            )}
-          </g>
-        ))}
-
-        {/* "1/min x 1000" caption */}
+        {/* big rpm readout */}
         <text
-          x={CX} y={CY - 30}
-          fill="#9fb2bb" fontSize="11" textAnchor="middle"
-          fontFamily="'Chakra Petch', sans-serif" letterSpacing="1"
+          x={CX}
+          y={CY - 2}
+          fill={over ? "#fb5566" : "#f2f7fb"}
+          fontSize="19"
+          fontWeight="700"
+          textAnchor="middle"
+          dominantBaseline="middle"
+          fontFamily="'JetBrains Mono', monospace"
         >
-          x&nbsp;1000
+          {Math.round(rpm)}
+        </text>
+        <text
+          x={CX}
+          y={CY + 11}
+          fill="#7f9bb5"
+          fontSize="5"
+          fontWeight="600"
+          letterSpacing="3"
+          textAnchor="middle"
+          fontFamily="'Chakra Petch', sans-serif"
+        >
+          RPM · ×1000
         </text>
 
-        {/* needle — drawn from the tail stub through the pivot out to the tip */}
-        <line
-          x1={needleTail.x} y1={needleTail.y} x2={needleTip.x} y2={needleTip.y}
-          stroke="#ff2a2a" strokeWidth={4} strokeLinecap="round"
-          filter="url(#tach-glow)"
-        />
-        <circle cx={CX} cy={CY} r={11} fill="#0c1216" stroke="#ff2a2a" strokeWidth={2.4} />
-        <circle cx={CX} cy={CY} r={3.6} fill="#ff2a2a" />
+        {/* load readout in the bottom gap */}
+        <text
+          x={CX}
+          y={CY + 33}
+          fill="#22d3ee"
+          fontSize="11"
+          fontWeight="700"
+          textAnchor="middle"
+          dominantBaseline="middle"
+          fontFamily="'JetBrains Mono', monospace"
+        >
+          {loadPct}%
+        </text>
+        <text
+          x={CX}
+          y={CY + 42}
+          fill="#7f9bb5"
+          fontSize="4.5"
+          fontWeight="600"
+          letterSpacing="3"
+          textAnchor="middle"
+          fontFamily="'Chakra Petch', sans-serif"
+        >
+          {over ? "LOAD · SHIFT" : "LOAD"}
+        </text>
       </svg>
-
-      <div className="-mt-7 flex items-end gap-5 short:-mt-5 md:-mt-9">
-        <div className="flex flex-col items-center">
-          <div
-            className="font-data font-bold leading-none text-[34px] short:text-[28px] md:text-[44px]"
-            style={{
-              color: over ? "#fb5566" : "#eef6f9",
-              textShadow: over ? "0 0 18px #fb5566" : "0 0 12px rgba(34,211,238,0.35)",
-            }}
-          >
-            {Math.round(rpm).toString().padStart(4, "0")}
-          </div>
-          <div className="mt-0.5 font-display text-[10px] uppercase tracking-hud text-muted-foreground">
-            RBM {over && <span className="text-neon-red">· SHIFT</span>}
-          </div>
-        </div>
-        <div className="flex flex-col items-center">
-          <div className="font-data text-[20px] font-bold leading-none md:text-[24px]" style={{ color: "#22d3ee" }}>
-            {loadPct}
-            <span className="text-[12px]">%</span>
-          </div>
-          <div className="mt-0.5 font-display text-[10px] uppercase tracking-hud text-muted-foreground">
-            LOAD
-          </div>
-        </div>
-      </div>
     </div>
   );
 }

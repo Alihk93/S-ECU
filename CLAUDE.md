@@ -292,6 +292,26 @@ add `cl`/`in` 8-bit masks for real per-channel coil/injector sensing.
   - Verified: `tsc -b` clean, `vite build` clean, rendered headless in Chromium (cobalt theme,
     unified accents, no scanlines/brackets, all readouts legible). Suggested commit:
     `style(ui): dark cobalt re-theme — unified accent, clean chrome, readable readouts`.
+- **UPDATED (2026-07-01, digital EV-cluster component redesign):** the cobalt re-theme above only
+  recolored; this pass **redesigns the components themselves** (still frontend-only, data contract +
+  layout + all values/numbers/text untouched). Rebuilt + re-embedded (`index.html` 621971 B /
+  `index.html.gz` 331092 B), verified with a local WS test-feed rendered headless in Chromium.
+  - `Gauge.tsx` — rewritten from the round dished dial to a **radial-arc gauge**: thick 270° track,
+    glowing colored progress sweep (SVG `pathLength`+`strokeDasharray`), tip marker, big centered
+    digital value (still the 0–5 V mapping) + label + "VOLT". Zero-value round-cap dot suppressed.
+  - `Tachometer.tsx` — rewritten from the half-circle needle to a **bold 270° EV arc**: rpm sweep
+    (red past redline), inner LOAD arc, ×1000 numeric labels, huge centered rpm readout. Same
+    0–8 ×1000 / 6500 redline.
+  - `ChannelCell.tsx` (NEW) — one unified indicator (rounded tile, glyph that glows/fills with
+    activity, activity bar). `CoilIndicator.tsx` (spark bolt, red→gold on fire) and
+    `InjectorAnimation.tsx` (fuel droplet, port "I" + GDI "G") now both render it, replacing the
+    skeuomorphic pencil-coil / Bosch-injector SVGs so every coil/injector shares one style.
+    `HpPumpArt` replaced with a clean pressure-gauge line glyph (used in the HI P tile).
+  - `StatusCluster.tsx` — rewritten: `StatusClusters` + `SystemIcons` now use **lucide glyphs**
+    (Power/Fuel/Fan/ShieldCheck/Cog and Battery/KeyRound/ToggleRight) in glowing icon+LED tiles,
+    replacing the fuel-pump/fan/immobilizer/IAC part-drawings. LED colours on the refreshed palette.
+  - `HudPanel.tsx` — cleaner header (larger title, rounded pill accent, more body padding).
+  - Suggested commit: `feat(ui): digital EV-cluster redesign — radial gauges, unified indicator tiles`.
 - **TRIED & REVERTED (2026-07-01, on-device cover):** briefly flashed a two-route build — animated
   cover at `/` + dashboard at `/app` (cover launches `<iframe src="/app">` same-origin to keep WS
   live). On hardware this was **unstable**: the dashboard flickered/reconnected ~once a second
