@@ -280,6 +280,22 @@ add `cl`/`in` 8-bit masks for real per-channel coil/injector sensing.
   single page as an intro overlay (one document, one WS — no iframe, no second route/socket),
   not the two-route approach. Standalone `S-ECU-Presentation.html` (base64 dashboard, sim-only)
   stays as the offline email deliverable. Contract untouched throughout.
+- **UPDATED (2026-07-01, cobalt dark restyle):** full visual restyle to a dark **cobalt navy**
+  (VS Code "Cobalt2" family) cockpit — **frontend-only, style-only; data contract + layout
+  untouched** (values/numbers/text unchanged). Rebuilt + re-embedded (`index.html` 649540 B /
+  `index.html.gz` 336469 B — no size change, still all-SVG) and regenerated
+  `S-ECU-Dashboard-Demo.html` + `S-ECU-Presentation.html` from `intro-template.html`.
+  NOT yet flashed on-device this pass.
+  - `index.css` — flipped `:root`/`.dark` tokens from the old light steel-blue to a dark cobalt
+    navy palette (deep navy bg, cool near-white foreground, lifted-navy glassy panels, slate
+    muted text); richer `hud-backdrop` (cyan top wash + blue corner glow + base gradient),
+    glassier rounded `.panel` with a blue rim light, softer scanlines (0.5→0.28).
+  - Fixed the handful of hardcoded dark colors that were tuned for the old light theme so they
+    read on dark: Tachometer RBM digits + LOAD, App HI-P readout, CoilIndicator +/− labels,
+    TopBar info-chips + SparkMark logo trace. The instrument faces (gauges, CKP/CMP + CAN
+    scopes, ECU LED panels) were already black/photoreal, so they carried over unchanged.
+  - Realism method is photorealistic SVG (constraint #4 upheld: no raster). Verified in
+    headless Chromium at 1440×900 — cobalt theme renders clean/elegant, all modules readable.
 - **NOT YET TESTED:** on-device visual confirmation of the new layout; multi-client broadcast,
   gauge latency under load, pot→load mapping, every status bit — bench test pending.
 
