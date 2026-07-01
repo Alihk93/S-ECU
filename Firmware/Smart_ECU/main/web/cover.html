@@ -1,0 +1,278 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>S-ECU · Smart ECU Tester</title>
+<style>
+  :root {
+    --pink: #ff36c8;
+    --cyan: #00e7f2;
+    --red: #ff2d55;
+    --green: #2bff88;
+    --amber: #ff7a18;
+    --bg: #05070d;
+  }
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  html, body { height: 100%; }
+  body {
+    font-family: "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+    background: var(--bg);
+    color: #e8f6ff;
+    overflow: hidden;
+    -webkit-font-smoothing: antialiased;
+  }
+
+  /* ---------- animated backdrop ---------- */
+  .backdrop {
+    position: fixed; inset: 0; z-index: 0;
+    background:
+      radial-gradient(1200px 700px at 15% -10%, rgba(255,54,200,0.16), transparent 60%),
+      radial-gradient(1100px 700px at 90% 110%, rgba(0,231,242,0.16), transparent 60%),
+      radial-gradient(900px 600px at 50% 50%, rgba(43,255,136,0.06), transparent 70%),
+      var(--bg);
+    animation: hueShift 18s ease-in-out infinite alternate;
+  }
+  @keyframes hueShift { 0% { filter: hue-rotate(0deg); } 100% { filter: hue-rotate(24deg); } }
+
+  .grid {
+    position: fixed; inset: -50%; z-index: 0;
+    background-image:
+      linear-gradient(rgba(0,231,242,0.08) 1px, transparent 1px),
+      linear-gradient(90deg, rgba(0,231,242,0.08) 1px, transparent 1px);
+    background-size: 46px 46px;
+    transform: perspective(500px) rotateX(60deg) translateY(0);
+    animation: gridScroll 8s linear infinite;
+    mask-image: radial-gradient(ellipse 80% 60% at 50% 40%, #000 30%, transparent 75%);
+    -webkit-mask-image: radial-gradient(ellipse 80% 60% at 50% 40%, #000 30%, transparent 75%);
+    opacity: 0.5;
+  }
+  @keyframes gridScroll { from { background-position: 0 0; } to { background-position: 0 46px; } }
+
+  .scanlines {
+    position: fixed; inset: 0; z-index: 3; pointer-events: none;
+    background: repeating-linear-gradient(0deg, rgba(0,0,0,0) 0, rgba(0,0,0,0) 2px, rgba(0,0,0,0.12) 3px);
+    mix-blend-mode: overlay;
+  }
+
+  .particles { position: fixed; inset: 0; z-index: 1; pointer-events: none; }
+  .particles i {
+    position: absolute; bottom: -10px; width: 3px; height: 3px; border-radius: 50%;
+    background: var(--cyan); box-shadow: 0 0 8px var(--cyan);
+    animation: rise linear infinite;
+  }
+  @keyframes rise {
+    0% { transform: translateY(0) scale(1); opacity: 0; }
+    10% { opacity: 0.9; }
+    100% { transform: translateY(-100vh) scale(0.4); opacity: 0; }
+  }
+
+  /* ---------- cover content ---------- */
+  .cover {
+    position: relative; z-index: 2;
+    height: 100%;
+    display: flex; flex-direction: column; align-items: center; justify-content: center;
+    text-align: center; padding: 24px;
+    gap: clamp(14px, 2.6vh, 30px);
+  }
+
+  .brand {
+    display: flex; align-items: center; gap: 14px;
+    opacity: 0; animation: fadeUp 0.8s ease-out 0.1s forwards;
+  }
+  .brand .mark { width: 54px; height: 54px; filter: drop-shadow(0 0 10px var(--amber)); animation: spark 2.4s ease-in-out infinite; }
+  @keyframes spark { 0%,100% { filter: drop-shadow(0 0 6px var(--amber)); } 50% { filter: drop-shadow(0 0 18px var(--amber)); } }
+  .brand .co { font-weight: 700; letter-spacing: 0.42em; font-size: 15px; color: #bfe9f2; text-transform: uppercase; }
+
+  .title {
+    font-size: clamp(58px, 13vw, 168px);
+    font-weight: 800; line-height: 0.9; letter-spacing: 0.04em;
+    background: linear-gradient(92deg, var(--pink), var(--cyan) 55%, var(--green));
+    -webkit-background-clip: text; background-clip: text; color: transparent;
+    background-size: 220% auto; animation: sheen 6s linear infinite, fadeUp 0.9s ease-out 0.25s both;
+    text-shadow: 0 0 40px rgba(0,231,242,0.25);
+  }
+  @keyframes sheen { to { background-position: 220% center; } }
+
+  .subtitle {
+    font-size: clamp(15px, 2.4vw, 26px); font-weight: 600; letter-spacing: 0.24em;
+    text-transform: uppercase; color: #9fe9ff;
+    opacity: 0; animation: fadeUp 0.9s ease-out 0.45s forwards;
+  }
+  .tagline {
+    max-width: 680px; font-size: clamp(13px, 1.7vw, 17px); line-height: 1.6; color: #a9c4d4;
+    opacity: 0; animation: fadeUp 0.9s ease-out 0.6s forwards;
+  }
+
+  /* ---------- feature chips ---------- */
+  .features {
+    display: flex; flex-wrap: wrap; justify-content: center; gap: 12px; max-width: 940px;
+  }
+  .chip {
+    display: flex; align-items: center; gap: 9px;
+    padding: 11px 16px; border-radius: 12px;
+    background: rgba(9,18,28,0.66); border: 1px solid rgba(0,231,242,0.18);
+    backdrop-filter: blur(6px); font-size: 13.5px; font-weight: 600; color: #d7ecf5;
+    box-shadow: 0 6px 22px rgba(0,0,0,0.35);
+    opacity: 0; transform: translateY(16px);
+    animation: fadeUp 0.7s ease-out forwards;
+  }
+  .chip svg { width: 20px; height: 20px; flex: none; }
+  .chip:nth-child(1) { animation-delay: 0.80s; }
+  .chip:nth-child(2) { animation-delay: 0.90s; }
+  .chip:nth-child(3) { animation-delay: 1.00s; }
+  .chip:nth-child(4) { animation-delay: 1.10s; }
+  .chip:nth-child(5) { animation-delay: 1.20s; }
+  .chip:nth-child(6) { animation-delay: 1.30s; }
+
+  /* ---------- launch ---------- */
+  .launch {
+    margin-top: 6px; position: relative;
+    display: inline-flex; align-items: center; gap: 12px;
+    padding: 16px 34px; border-radius: 999px; border: none; cursor: pointer;
+    font-size: 17px; font-weight: 800; letter-spacing: 0.08em; text-transform: uppercase;
+    color: #04121a;
+    background: linear-gradient(92deg, var(--cyan), var(--green));
+    box-shadow: 0 0 0 rgba(0,231,242,0.6);
+    opacity: 0; animation: fadeUp 0.8s ease-out 1.45s forwards, pulse 2.4s ease-in-out 2.2s infinite;
+    transition: transform 0.15s ease;
+  }
+  .launch:hover { transform: translateY(-2px) scale(1.03); }
+  .launch:active { transform: translateY(0) scale(0.99); }
+  .launch .play { width: 20px; height: 20px; }
+  @keyframes pulse {
+    0%,100% { box-shadow: 0 0 0 0 rgba(0,231,242,0.55); }
+    50% { box-shadow: 0 0 34px 6px rgba(0,231,242,0.35); }
+  }
+
+  .hint {
+    font-size: 12px; letter-spacing: 0.14em; text-transform: uppercase; color: #6f8898;
+    opacity: 0; animation: fadeUp 0.8s ease-out 1.7s forwards;
+  }
+
+  @keyframes fadeUp { from { opacity: 0; transform: translateY(20px); } to { opacity: 1; transform: translateY(0); } }
+
+  /* ---------- dashboard overlay ---------- */
+  .stage {
+    position: fixed; inset: 0; z-index: 40; background: var(--bg);
+    display: none; opacity: 0; transition: opacity 0.4s ease;
+  }
+  .stage.open { display: block; opacity: 1; }
+  .stage iframe { width: 100%; height: 100%; border: 0; display: block; }
+  .back {
+    position: fixed; top: 14px; left: 14px; z-index: 41;
+    display: inline-flex; align-items: center; gap: 8px;
+    padding: 9px 16px; border-radius: 999px; cursor: pointer;
+    font-size: 13px; font-weight: 700; letter-spacing: 0.06em; text-transform: uppercase;
+    color: #eafcff; background: rgba(6,12,20,0.82); border: 1px solid rgba(0,231,242,0.35);
+    backdrop-filter: blur(6px); box-shadow: 0 6px 20px rgba(0,0,0,0.5);
+  }
+  .back:hover { border-color: var(--cyan); }
+  .loading {
+    position: fixed; inset: 0; z-index: 41; display: none;
+    align-items: center; justify-content: center; flex-direction: column; gap: 16px;
+    color: #9fe9ff; letter-spacing: 0.2em; text-transform: uppercase; font-size: 13px;
+  }
+  .loading.show { display: flex; }
+  .spinner {
+    width: 44px; height: 44px; border-radius: 50%;
+    border: 3px solid rgba(0,231,242,0.2); border-top-color: var(--cyan);
+    animation: spin 0.9s linear infinite;
+  }
+  @keyframes spin { to { transform: rotate(360deg); } }
+
+  @media (max-width: 560px) {
+    .brand .co { font-size: 11px; letter-spacing: 0.3em; }
+    .features { gap: 8px; }
+    .chip { padding: 9px 12px; font-size: 12px; }
+  }
+</style>
+</head>
+<body>
+  <div class="backdrop"></div>
+  <div class="grid"></div>
+  <div class="particles" id="particles"></div>
+
+  <main class="cover" id="cover">
+    <div class="brand">
+      <svg class="mark" viewBox="0 0 24 24" fill="none">
+        <path d="M13 2 L4 14 h6 l-1 8 11 -13 h-7 z" fill="#ff7a18" stroke="#ffd08a" stroke-width="0.6" stroke-linejoin="round"/>
+      </svg>
+      <span class="co">AL-AYED&nbsp;·&nbsp;Automotive</span>
+    </div>
+
+    <h1 class="title">S-ECU</h1>
+    <div class="subtitle">Smart ECU Tester</div>
+    <p class="tagline">
+      A real-time, hardware-in-the-loop engine control dashboard. An ESP32-S3 reads live
+      inputs and streams telemetry over its own Wi-Fi to this cyberpunk instrument cluster —
+      tach, oscilloscopes, coils, injectors and diagnostics, rendered at 30&nbsp;Hz.
+    </p>
+
+    <div class="features">
+      <div class="chip"><svg viewBox="0 0 24 24" fill="none"><path d="M3 12h4l2-7 4 14 2-7h6" stroke="#00e7f2" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>CKP / CMP oscilloscope</div>
+      <div class="chip"><svg viewBox="0 0 24 24" fill="none"><path d="M12 21a9 9 0 1 1 0-18 9 9 0 0 1 0 18Z" stroke="#ff2d55" stroke-width="2"/><path d="M12 12l5-3" stroke="#ff2d55" stroke-width="2" stroke-linecap="round"/></svg>Analog RBM tachometer</div>
+      <div class="chip"><svg viewBox="0 0 24 24" fill="none"><rect x="3" y="5" width="4" height="14" rx="1" stroke="#ff2d3a" stroke-width="2"/><rect x="10" y="5" width="4" height="14" rx="1" stroke="#ff2d3a" stroke-width="2"/><rect x="17" y="5" width="4" height="14" rx="1" stroke="#ff2d3a" stroke-width="2"/></svg>8 coils · 8 + 8 injectors</div>
+      <div class="chip"><svg viewBox="0 0 24 24" fill="none"><path d="M3 16V8l4 4 5-6 5 6 4-4v8" stroke="#00e7f2" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>CAN HI / LO bus scope</div>
+      <div class="chip"><svg viewBox="0 0 24 24" fill="none"><path d="M5 3h9l3 3v15H5z" stroke="#2bff88" stroke-width="2" stroke-linejoin="round"/><path d="M8 11h6M8 15h6" stroke="#2bff88" stroke-width="2" stroke-linecap="round"/></svg>12-bit status diagnostics</div>
+      <div class="chip"><svg viewBox="0 0 24 24" fill="none"><path d="M12 3v6M7 9a5 5 0 1 0 10 0" stroke="#ff7a18" stroke-width="2" stroke-linecap="round"/><path d="M9 21h6" stroke="#ff7a18" stroke-width="2" stroke-linecap="round"/></svg>GDI high-pressure rail</div>
+    </div>
+
+    <button class="launch" id="launchBtn">
+      <svg class="play" viewBox="0 0 24 24" fill="#04121a"><path d="M7 5v14l12-7z"/></svg>
+      Launch Live Dashboard
+    </button>
+    <div class="hint">Live telemetry from the ESP32-S3 · best viewed on a wide screen</div>
+  </main>
+
+  <div class="loading" id="loading"><div class="spinner"></div><span>Booting dashboard…</span></div>
+
+  <section class="stage" id="stage">
+    <button class="back" id="backBtn">
+      <svg width="14" height="14" viewBox="0 0 24 24" fill="none"><path d="M14 6l-6 6 6 6" stroke="#eafcff" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"/></svg>
+      Back
+    </button>
+    <iframe id="frame" title="S-ECU Live Dashboard"></iframe>
+  </section>
+
+  <div class="scanlines"></div>
+
+  <script>
+    // floating particles
+    (function () {
+      var p = document.getElementById('particles');
+      for (var i = 0; i < 26; i++) {
+        var s = document.createElement('i');
+        s.style.left = Math.random() * 100 + 'vw';
+        s.style.animationDuration = (7 + Math.random() * 9) + 's';
+        s.style.animationDelay = (-Math.random() * 12) + 's';
+        var c = ['#00e7f2', '#ff36c8', '#2bff88'][i % 3];
+        s.style.background = c; s.style.boxShadow = '0 0 8px ' + c;
+        p.appendChild(s);
+      }
+    })();
+
+    var launched = false;
+    var stage = document.getElementById('stage');
+    var frame = document.getElementById('frame');
+    var loading = document.getElementById('loading');
+
+    document.getElementById('launchBtn').addEventListener('click', function () {
+      loading.classList.add('show');
+      setTimeout(function () {
+        if (!launched) { frame.src = '/app'; launched = true; }
+        stage.classList.add('open');
+        frame.addEventListener('load', function () { loading.classList.remove('show'); }, { once: true });
+        setTimeout(function () { loading.classList.remove('show'); }, 4000);
+      }, 60);
+    });
+
+    document.getElementById('backBtn').addEventListener('click', function () {
+      stage.classList.remove('open');
+    });
+    document.addEventListener('keydown', function (e) {
+      if (e.key === 'Escape') stage.classList.remove('open');
+    });
+  </script>
+</body>
+</html>

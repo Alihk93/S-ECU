@@ -268,6 +268,18 @@ add `cl`/`in` 8-bit masks for real per-channel coil/injector sensing.
   - `App.tsx` — imports `HpPumpArt` and renders it in the **HI P** cell of the INJ GDI panel
     (above the bar reading), replacing the plain readout tile.
   - All hand-drawn SVG (gradients/paths/filters), no raster — constraint #4 upheld.
+- **TRIED & REVERTED (2026-07-01, on-device cover):** briefly flashed a two-route build — animated
+  cover at `/` + dashboard at `/app` (cover launches `<iframe src="/app">` same-origin to keep WS
+  live). On hardware this was **unstable**: the dashboard flickered/reconnected ~once a second
+  (suspected iframe + dual-page keep-alive sockets vs. httpd LRU purge interacting badly with the
+  WS link). **Reverted to the stable single-page build** (dashboard served directly at `/`,
+  1.145 MB, reflashed & verified). `main.c` / `main/CMakeLists.txt` are back to a single
+  `index.html.gz` embed + `root_get_handler`. The `main/web/cover.html(.gz)` files + the
+  `dashboard-ui/intro-template.html` source remain in-tree but are **not embedded/served**.
+  If the cover is wanted on-device later, the clean fix is to fold it into the dashboard's own
+  single page as an intro overlay (one document, one WS — no iframe, no second route/socket),
+  not the two-route approach. Standalone `S-ECU-Presentation.html` (base64 dashboard, sim-only)
+  stays as the offline email deliverable. Contract untouched throughout.
 - **NOT YET TESTED:** on-device visual confirmation of the new layout; multi-client broadcast,
   gauge latency under load, pot→load mapping, every status bit — bench test pending.
 
