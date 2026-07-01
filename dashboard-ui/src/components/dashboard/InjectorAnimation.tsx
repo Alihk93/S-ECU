@@ -71,8 +71,8 @@ function PortInjectorSvg({ uid, value, active }: { uid: string; value: number; a
       <rect x="15.5" y="20" width="17" height="4" rx="2" fill={`url(#inj-ring-${uid})`} />
       <rect x="15.5" y="20.4" width="17" height="1.2" rx="0.6" fill="#ff9a9a" opacity="0.8" />
 
-      {/* angled electrical connector (upper-left) */}
-      <g transform="rotate(-30 18 34)">
+      {/* angled electrical connector — points up to 11 o'clock */}
+      <g transform="rotate(-62 18 36)">
         <rect x="3" y="27" width="16" height="15" rx="3" fill={`url(#inj-black-${uid})`} stroke="#0a0c0e" strokeWidth="0.6" />
         <rect x="6" y="30.5" width="7" height="8" rx="1.5" fill="#0c0e10" />
       </g>
@@ -270,6 +270,85 @@ function GdiInjectorSvg({ uid, value, active }: { uid: string; value: number; ac
           transition: "filter 40ms linear",
         }}
       />
+    </svg>
+  );
+}
+
+// GDI high-pressure fuel pump — brushed-aluminium domed pump head, faceted hex
+// body with left outlet + right inlet ports, a grey solenoid connector, an oval
+// mounting flange and the tappet return spring below. Hand-drawn SVG after the
+// reference photo (frontend-only art; feeds the HI-P rail readout).
+export function HpPumpArt({ className }: { className?: string }) {
+  return (
+    <svg className={className} viewBox="0 0 80 122" preserveAspectRatio="xMidYMid meet" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
+      <defs>
+        <linearGradient id="hp-steel" x1="0" y1="0" x2="1" y2="0">
+          <stop offset="0%" stopColor="#828b92" />
+          <stop offset="30%" stopColor="#eef2f4" />
+          <stop offset="55%" stopColor="#bdc5ca" />
+          <stop offset="100%" stopColor="#6f787f" />
+        </linearGradient>
+        <radialGradient id="hp-dome" cx="40%" cy="30%" r="78%">
+          <stop offset="0%" stopColor="#f4f7f8" />
+          <stop offset="55%" stopColor="#c1c9cd" />
+          <stop offset="100%" stopColor="#767f86" />
+        </radialGradient>
+        <linearGradient id="hp-con" x1="0" y1="0" x2="0" y2="1">
+          <stop offset="0%" stopColor="#9aa0a6" />
+          <stop offset="50%" stopColor="#686e73" />
+          <stop offset="100%" stopColor="#40454a" />
+        </linearGradient>
+        <linearGradient id="hp-spring" x1="0" y1="0" x2="0" y2="1">
+          <stop offset="0%" stopColor="#5e5952" />
+          <stop offset="45%" stopColor="#2a2724" />
+          <stop offset="100%" stopColor="#131110" />
+        </linearGradient>
+      </defs>
+
+      {/* grey solenoid connector, upper-left */}
+      <g transform="rotate(-16 24 36)">
+        <rect x="2" y="30" width="24" height="15" rx="3" fill="url(#hp-con)" stroke="#2e3236" strokeWidth="0.6" />
+        <rect x="4" y="33" width="8" height="9" rx="1.5" fill="#3a3f43" />
+      </g>
+
+      {/* left outlet port + bore */}
+      <rect x="4" y="49" width="28" height="10" rx="3" fill="url(#hp-steel)" stroke="#6b747a" strokeWidth="0.5" />
+      <circle cx="6.5" cy="54" r="2.4" fill="#39424a" />
+      {/* right inlet port + bore */}
+      <rect x="48" y="48" width="28" height="12" rx="3" fill="url(#hp-steel)" stroke="#6b747a" strokeWidth="0.5" />
+      <circle cx="72.5" cy="54" r="3.6" fill="#2b3338" />
+
+      {/* faceted hex aluminium body */}
+      <path d="M16 32 L64 32 L69 46 L64 66 L16 66 L11 46 Z" fill="url(#hp-steel)" stroke="#69727a" strokeWidth="0.6" />
+      <g stroke="#7d868c" strokeWidth="0.6" opacity="0.5">
+        <line x1="27" y1="34" x2="27" y2="64" />
+        <line x1="53" y1="34" x2="53" y2="64" />
+      </g>
+
+      {/* domed pump head */}
+      <ellipse cx="40" cy="22" rx="27" ry="17" fill="url(#hp-dome)" stroke="#69727a" strokeWidth="0.6" />
+      <ellipse cx="34" cy="13" rx="10" ry="5" fill="#f4f7f8" opacity="0.55" />
+      <ellipse cx="40" cy="16" rx="15" ry="7" fill="#a9b2b7" />
+      <ellipse cx="40" cy="15" rx="9.5" ry="4.5" fill="#d9e0e3" />
+
+      {/* oval mounting flange */}
+      <ellipse cx="40" cy="72" rx="35" ry="7" fill="url(#hp-steel)" stroke="#69727a" strokeWidth="0.6" />
+      <circle cx="68" cy="72" r="2.6" fill="#39424a" />
+
+      {/* black O-ring under the flange */}
+      <ellipse cx="40" cy="79" rx="12" ry="4" fill="#161719" />
+
+      {/* tappet return spring */}
+      <g fill="none" stroke="url(#hp-spring)" strokeWidth="3.2">
+        <ellipse cx="40" cy="85" rx="11" ry="4" />
+        <ellipse cx="40" cy="91" rx="11" ry="4" />
+        <ellipse cx="40" cy="97" rx="11" ry="4" />
+        <ellipse cx="40" cy="103" rx="10.5" ry="4" />
+        <ellipse cx="40" cy="109" rx="10" ry="4" />
+      </g>
+
+      {/* bottom tappet rod */}
+      <rect x="36" y="110" width="8" height="9" rx="2" fill="url(#hp-steel)" stroke="#6b747a" strokeWidth="0.5" />
     </svg>
   );
 }

@@ -42,7 +42,7 @@ function StatusGroup({ leds, art }: { leds: Led[]; art?: ReactNode }) {
 }
 
 type StatusMap = Record<StatusKey, number>;
-const art = "h-8 w-8 md:h-9 md:w-9";
+const art = "h-14 w-14 md:h-[4.5rem] md:w-[4.5rem]";
 
 // Right-side grouped status: ST · ETC · FPC · FAN · IMO · IAC (matches the sketch).
 export function StatusClusters({
@@ -308,23 +308,64 @@ function FuelPumpArt({ className }: { className?: string }) {
 // FAN — Noctua-style axial fan: beige square frame, brown corner mounts,
 // nine curved brown blades on a hub.
 function FanArt({ className }: { className?: string }) {
+  // 9 overlapping swept blades → a solid axial-fan rotor (no see-through gaps).
   const blades = Array.from({ length: 9 }, (_, i) => (
     <path
       key={i}
-      d="M50 50 C58 30 78 27 87 35 C80 45 66 50 50 50 Z"
-      fill="#5c3a22"
+      d="M50 50 C49 34 53 22 61 20 C74 17 86 26 86 40 C77 42 62 46 55 49 C52 50 50 50 50 50 Z"
+      fill="url(#fan-blade)"
+      stroke="#2c1b0d"
+      strokeWidth="0.6"
       transform={`rotate(${i * 40} 50 50)`}
     />
   ));
   return (
     <svg className={className} viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
-      <rect x="5" y="5" width="90" height="90" rx="14" fill="none" stroke="#e7dcc6" strokeWidth="6" />
-      <circle cx="17" cy="17" r="7" fill="#5a3a1f" />
-      <circle cx="83" cy="17" r="7" fill="#5a3a1f" />
-      <circle cx="17" cy="83" r="7" fill="#5a3a1f" />
-      <circle cx="83" cy="83" r="7" fill="#5a3a1f" />
+      <defs>
+        <linearGradient id="fan-frame" x1="0" y1="0" x2="1" y2="1">
+          <stop offset="0%" stopColor="#efe7d4" />
+          <stop offset="100%" stopColor="#c7b999" />
+        </linearGradient>
+        <radialGradient id="fan-well" cx="50%" cy="44%" r="58%">
+          <stop offset="0%" stopColor="#3d2b18" />
+          <stop offset="100%" stopColor="#130c05" />
+        </radialGradient>
+        <linearGradient id="fan-blade" x1="0" y1="16" x2="0" y2="88" gradientUnits="userSpaceOnUse">
+          <stop offset="0%" stopColor="#9c6739" />
+          <stop offset="50%" stopColor="#6b4423" />
+          <stop offset="100%" stopColor="#3a2513" />
+        </linearGradient>
+        <radialGradient id="fan-hub" cx="42%" cy="38%" r="66%">
+          <stop offset="0%" stopColor="#8c5c31" />
+          <stop offset="100%" stopColor="#2b1a0c" />
+        </radialGradient>
+      </defs>
+
+      {/* beige frame with a circular air opening cut out (evenodd) */}
+      <path
+        fill="url(#fan-frame)"
+        fillRule="evenodd"
+        d="M14 3 H86 A11 11 0 0 1 97 14 V86 A11 11 0 0 1 86 97 H14 A11 11 0 0 1 3 86 V14 A11 11 0 0 1 14 3 Z
+           M50 8 A42 42 0 1 0 50 92 A42 42 0 1 0 50 8 Z"
+      />
+      {/* interior air-well shadow */}
+      <circle cx="50" cy="50" r="42" fill="url(#fan-well)" />
+
+      {/* corner mounting pads + screw holes */}
+      {[[15, 15], [85, 15], [15, 85], [85, 85]].map(([cx, cy], i) => (
+        <g key={i}>
+          <circle cx={cx} cy={cy} r="8" fill="#b8aa89" />
+          <circle cx={cx} cy={cy} r="3" fill="#241a10" />
+        </g>
+      ))}
+
+      {/* swept rotor blades */}
       {blades}
-      <circle cx="50" cy="50" r="15" fill="#6b4423" />
+
+      {/* hub + center sticker */}
+      <circle cx="50" cy="50" r="16" fill="url(#fan-hub)" stroke="#241608" strokeWidth="1" />
+      <circle cx="50" cy="50" r="8" fill="#dccdb1" />
+      <circle cx="50" cy="50" r="8" fill="none" stroke="#8a5a30" strokeWidth="1" />
     </svg>
   );
 }
@@ -333,43 +374,159 @@ function FanArt({ className }: { className?: string }) {
 // inside (bow + toothed blade), the "key inside car" anti-theft warning glyph.
 function ImmobilizerArt({ className }: { className?: string }) {
   return (
-    <svg className={className} viewBox="0 0 200 108" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
-      {/* car side-profile outline with two wheel arches cut into the base */}
+    <svg className={className} viewBox="0 0 200 120" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
+      {/* SUV side-profile outline: flat vertical tailgate (no trunk), long tall
+          roof, near-vertical windshield, short hood, big wheels */}
       <path
-        d="M18 90 V70 C18 63 21 59 27 57 L54 38 C58 32 64 29 72 29 L124 29
-           C134 29 142 33 148 41 L168 58 C176 60 182 64 182 72 V90
-           H150 A16 16 0 0 0 118 90 H64 A16 16 0 0 0 32 90 H18 Z"
-        fill="none" stroke="#ff2d2d" strokeWidth="9" strokeLinejoin="round" strokeLinecap="round"
+        d="M14 96 L14 42 Q14 36 20 36 L128 36
+           Q137 36 142 43 L157 62 L186 66 Q192 67 192 74 L192 90 Q192 96 186 96
+           L168 96 A20 20 0 0 0 128 96 L84 96 A20 20 0 0 0 44 96 Z"
+        fill="none" stroke="#ff2d2d" strokeWidth="7" strokeLinejoin="round" strokeLinecap="round"
       />
-      {/* key — bow (head) */}
-      <rect x="74" y="50" width="34" height="32" rx="14" fill="#ff5a2d" />
-      {/* key — blade with rounded tip */}
-      <rect x="104" y="59" width="50" height="13" rx="6" fill="#ff5a2d" />
-      {/* key — teeth on the top edge near the tip */}
-      <rect x="126" y="52" width="5" height="8" rx="1" fill="#ff5a2d" />
-      <rect x="135" y="52" width="5" height="8" rx="1" fill="#ff5a2d" />
-      <rect x="144" y="52" width="5" height="8" rx="1" fill="#ff5a2d" />
+      {/* big SUV wheels sitting in the arches */}
+      <circle cx="64" cy="96" r="16" fill="none" stroke="#ff2d2d" strokeWidth="7" />
+      <circle cx="148" cy="96" r="16" fill="none" stroke="#ff2d2d" strokeWidth="7" />
+
+      {/* key inside the cabin: bold oval bow ring, slim blade, pointed tip,
+          comb teeth near the tip — sized to stay within the car body */}
+      <ellipse cx="80" cy="63" rx="9" ry="11" fill="none" stroke="#ff2d2d" strokeWidth="6" />
+      <g fill="#ff2d2d">
+        <rect x="88" y="60" width="44" height="6" rx="3" />
+      </g>
+      {/* comb teeth on the bottom edge near the tip */}
+      <g stroke="#ff2d2d" strokeWidth="3.5" strokeLinecap="round">
+        <line x1="112" y1="66" x2="112" y2="72" />
+        <line x1="120" y1="66" x2="120" y2="72" />
+      </g>
     </svg>
   );
 }
 
-// IAC — idle-air-control stepper valve: black body + connector, copper collar,
-// spring and pintle tip.
+// IAC — idle-air-control stepper valve, rendered photo-realistically after a
+// Mitsubishi-style unit: glossy black moulded motor body, ribbed connector plug
+// on top, knurled brass collar, steel coil spring and black bullet pintle nose.
 function IacValveArt({ className }: { className?: string }) {
   return (
-    <svg className={className} viewBox="0 0 112 72" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
-      {/* main body */}
-      <circle cx="78" cy="38" r="27" fill="#161616" />
-      <circle cx="78" cy="38" r="19" fill="#242424" />
-      {/* connector on top */}
-      <rect x="70" y="8" width="28" height="18" rx="3" fill="#0c0c0c" />
-      {/* copper collar */}
-      <rect x="40" y="29" width="16" height="18" rx="2" fill="#8a5a34" />
-      {/* spring */}
-      <rect x="22" y="33" width="20" height="10" rx="2" fill="#3a3a3a" />
-      {/* pintle tip */}
-      <path d="M6 38 L22 31 L22 45 Z" fill="#0c0c0c" />
-      <circle cx="11" cy="38" r="6" fill="#161616" />
+    <svg className={className} viewBox="0 0 144 100" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
+      <defs>
+        {/* glossy black plastic — off-centre highlight, deep falloff */}
+        <radialGradient id="iac-body" cx="36%" cy="26%" r="82%">
+          <stop offset="0%" stopColor="#8b9096" />
+          <stop offset="18%" stopColor="#3c4045" />
+          <stop offset="48%" stopColor="#17191c" />
+          <stop offset="100%" stopColor="#020203" />
+        </radialGradient>
+        <radialGradient id="iac-con" cx="34%" cy="24%" r="90%">
+          <stop offset="0%" stopColor="#6c7076" />
+          <stop offset="35%" stopColor="#262a2e" />
+          <stop offset="100%" stopColor="#040506" />
+        </radialGradient>
+        <radialGradient id="iac-nose" cx="30%" cy="28%" r="95%">
+          <stop offset="0%" stopColor="#6a6e73" />
+          <stop offset="35%" stopColor="#202327" />
+          <stop offset="100%" stopColor="#020203" />
+        </radialGradient>
+        {/* brass cylinder seen side-on: dark rim / bright specular band / dark rim */}
+        <linearGradient id="iac-copper" x1="0" y1="0" x2="0" y2="1">
+          <stop offset="0%" stopColor="#6a4420" />
+          <stop offset="20%" stopColor="#c79758" />
+          <stop offset="40%" stopColor="#f6d79f" />
+          <stop offset="56%" stopColor="#d5a262" />
+          <stop offset="100%" stopColor="#573619" />
+        </linearGradient>
+        {/* steel wire: bright top specular grading to shadow at the bottom */}
+        <linearGradient id="iac-steel" x1="0" y1="0" x2="0" y2="1">
+          <stop offset="0%" stopColor="#5b6166" />
+          <stop offset="26%" stopColor="#f2f5f7" />
+          <stop offset="52%" stopColor="#bcc3c8" />
+          <stop offset="100%" stopColor="#4d5257" />
+        </linearGradient>
+        <filter id="iac-soft" x="-40%" y="-40%" width="180%" height="180%">
+          <feGaussianBlur stdDeviation="1.6" />
+        </filter>
+        <filter id="iac-shadow" x="-30%" y="-60%" width="160%" height="220%">
+          <feGaussianBlur stdDeviation="3.2" />
+        </filter>
+      </defs>
+
+      {/* soft ground contact shadow */}
+      <ellipse cx="92" cy="94" rx="52" ry="6" fill="#000" opacity="0.4" filter="url(#iac-shadow)" />
+
+      {/* mounting ears behind the body */}
+      <g fill="#0a0b0c" stroke="#000" strokeWidth="0.6">
+        <rect x="82" y="74" width="16" height="17" rx="3" />
+        <rect x="104" y="72" width="15" height="16" rx="3" />
+      </g>
+      <circle cx="90" cy="82.5" r="3" fill="#050506" stroke="#33363a" strokeWidth="0.8" />
+      <circle cx="111.5" cy="79.5" r="3" fill="#050506" stroke="#33363a" strokeWidth="0.8" />
+
+      {/* ---- left shaft assembly: nose · spring · brass collar ---- */}
+      {/* knurled brass collar (right end tucks under the body) */}
+      <rect x="46" y="40" width="26" height="28" rx="2.5" fill="url(#iac-copper)" stroke="#33200f" strokeWidth="0.7" />
+      <g stroke="#7a5026" strokeWidth="0.7" opacity="0.45">
+        <line x1="50" y1="40" x2="50" y2="68" />
+        <line x1="54" y1="40" x2="54" y2="68" />
+        <line x1="58" y1="40" x2="58" y2="68" />
+        <line x1="62" y1="40" x2="62" y2="68" />
+        <line x1="66" y1="40" x2="66" y2="68" />
+      </g>
+      <rect x="46" y="45" width="26" height="2.4" rx="1" fill="#ffe9c2" opacity="0.6" />
+      {/* dark end caps give the cylinder rounded ends */}
+      <ellipse cx="46" cy="54" rx="3" ry="14" fill="#3a2512" />
+      <ellipse cx="72" cy="54" rx="3" ry="14" fill="#7a5026" opacity="0.5" />
+
+      {/* steel coil spring — each coil = shadow ring + offset highlight ring */}
+      <rect x="30" y="46" width="20" height="16" fill="#101214" />
+      <g fill="none">
+        {[31.5, 36, 40.5, 45].map((cx, i) => (
+          <g key={i}>
+            <ellipse cx={cx} cy="54" rx="3.6" ry="11" stroke="#1b1e20" strokeWidth="3.4" />
+            <ellipse cx={cx} cy="54" rx="3.6" ry="11" stroke="url(#iac-steel)" strokeWidth="2.4" />
+            <path d={`M${cx - 3.4} 51 A3.6 8 0 0 1 ${cx + 2.4} 46`} stroke="#ffffff" strokeWidth="0.9" opacity="0.7" />
+          </g>
+        ))}
+      </g>
+
+      {/* black flange washer between nose and spring */}
+      <ellipse cx="29" cy="54" rx="3" ry="12" fill="#0c0d0f" stroke="#2a2d30" strokeWidth="0.7" />
+
+      {/* black bullet pintle nose (far left) */}
+      <path d="M29 43 L20 43 Q6 46 6 54 Q6 62 20 65 L29 65 Z" fill="url(#iac-nose)" stroke="#000" strokeWidth="0.7" />
+      <ellipse cx="15" cy="48" rx="4.5" ry="3" fill="#8b8f94" opacity="0.55" filter="url(#iac-soft)" />
+      <ellipse cx="12" cy="47" rx="1.8" ry="1.1" fill="#eef1f3" opacity="0.75" />
+
+      {/* ---- glossy black stepper-motor body — sharp-edged rectangular moulding ---- */}
+      <rect x="62" y="21" width="66" height="64" rx="3" ry="3" fill="url(#iac-body)" stroke="#000" strokeWidth="1" />
+      {/* raised circular bearing boss on the left face (shaft entry) */}
+      <ellipse cx="77" cy="54" rx="14" ry="16" fill="none" stroke="#3a3d41" strokeWidth="1.4" opacity="0.5" />
+      <ellipse cx="77" cy="54" rx="8" ry="10" fill="none" stroke="#2c2f33" strokeWidth="1" opacity="0.45" />
+      {/* broad soft gloss + tight specular hotspot */}
+      <ellipse cx="82" cy="33" rx="16" ry="9" fill="#b7bbc0" opacity="0.4" filter="url(#iac-soft)" />
+      <ellipse cx="79" cy="30" rx="5" ry="3" fill="#f2f4f6" opacity="0.7" />
+      {/* rim light down the right edge and along the bottom */}
+      <path d="M128 60 L128 84 L110 84" fill="none" stroke="#5a5e63" strokeWidth="2" opacity="0.4" filter="url(#iac-soft)" />
+
+      {/* dark bearing collar at the shaft/body junction */}
+      <ellipse cx="64" cy="54" rx="5" ry="16" fill="#090a0b" />
+      <ellipse cx="64" cy="54" rx="5" ry="16" fill="none" stroke="#54585c" strokeWidth="1" opacity="0.55" />
+
+      {/* ---- tall ribbed electrical connector on top, tilted up-right ---- */}
+      <g transform="rotate(-15 96 24)">
+        <rect x="76" y="5" width="50" height="28" rx="8" fill="url(#iac-con)" stroke="#000" strokeWidth="0.9" />
+        {/* gloss streak + moulded ribs */}
+        <rect x="81" y="7.5" width="32" height="4" rx="2" fill="#71757a" opacity="0.45" filter="url(#iac-soft)" />
+        <g stroke="#000" strokeWidth="1" opacity="0.45">
+          <line x1="90" y1="8" x2="90" y2="30" />
+          <line x1="96" y1="8" x2="96" y2="30" />
+        </g>
+        {/* protruding terminal plug at the end */}
+        <rect x="108" y="7" width="18" height="24" rx="3.5" fill="#0a0b0c" stroke="#000" strokeWidth="0.7" />
+        <rect x="110" y="9" width="14" height="20" rx="2.5" fill="#040405" />
+        <g fill="#8b8f94">
+          <rect x="112.5" y="12" width="3.4" height="14" rx="1" />
+          <rect x="118" y="12" width="3.4" height="14" rx="1" />
+        </g>
+      </g>
     </svg>
   );
 }

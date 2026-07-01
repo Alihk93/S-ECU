@@ -252,6 +252,22 @@ add `cl`/`in` 8-bit masks for real per-channel coil/injector sensing.
     as a Bosch-style injector (`PortInjectorSvg`) while the GDI bank keeps its original art
     (`GdiInjectorSvg`), branched on `prefix === "G"`; gauge label moved above center + digital
     readout moved to the bottom of the dial in `Gauge.tsx`.
+- **UPDATED (2026-07-01, art pass):** SVG illustration refinements only — **frontend-only, data
+  contract untouched** — built + embedded into firmware (`index.html` 649253 B / `index.html.gz`
+  336383 B), committed & pushed (NOT yet flashed on-device this pass):
+  - `StatusCluster.tsx` — `ImmobilizerArt` redrawn as an **SUV side-profile tell-tale** (flat
+    vertical tailgate, red outline, no trunk overhang) with a **red key centered inside the
+    body**, teeth pointing down, arrow tip removed. `IacValveArt` fully rewritten as a
+    **realistic sharp-edged rectangular IAC valve** (radial/linear metal gradients, blur
+    filters for soft rim + ground shadow, knurled brass collar, 3D coil spring, bullet nose,
+    ribbed electrical connector) — replaces the earlier flat stepper sketch.
+  - `InjectorAnimation.tsx` — port injector (`PortInjectorSvg`) electrical connector rotated to
+    point up to **11 o'clock** (`rotate(-62 18 36)`). New exported **`HpPumpArt`** component: a
+    GDI high-pressure fuel pump (grey solenoid connector, faceted hex body, domed head, oval
+    flange, tappet return spring) drawn as pure SVG.
+  - `App.tsx` — imports `HpPumpArt` and renders it in the **HI P** cell of the INJ GDI panel
+    (above the bar reading), replacing the plain readout tile.
+  - All hand-drawn SVG (gradients/paths/filters), no raster — constraint #4 upheld.
 - **NOT YET TESTED:** on-device visual confirmation of the new layout; multi-client broadcast,
   gauge latency under load, pot→load mapping, every status bit — bench test pending.
 

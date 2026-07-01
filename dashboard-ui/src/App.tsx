@@ -2,7 +2,7 @@ import { CanScope } from "@/components/dashboard/CanScope";
 import { CoilIndicator } from "@/components/dashboard/CoilIndicator";
 import { Gauge } from "@/components/dashboard/Gauge";
 import { HudPanel } from "@/components/dashboard/HudPanel";
-import { InjectorAnimation } from "@/components/dashboard/InjectorAnimation";
+import { HpPumpArt, InjectorAnimation } from "@/components/dashboard/InjectorAnimation";
 import { PowerDisplay } from "@/components/dashboard/PowerDisplay";
 import { StatusClusters, SystemIcons } from "@/components/dashboard/StatusCluster";
 import { Tachometer } from "@/components/dashboard/Tachometer";
@@ -108,6 +108,7 @@ export default function App() {
             {/* HI P — GDI high-pressure fuel rail */}
             <div className="panel flex flex-col items-center justify-center gap-0.5 rounded-sm px-1 py-1">
               <span className="font-display text-[9px] uppercase tracking-hud text-muted-foreground">HI&nbsp;P</span>
+              <HpPumpArt className="min-h-0 w-full flex-1" />
               <span className="font-data text-base font-bold leading-none" style={{ color: "#06435a" }}>
                 {Math.round(state.hip)}
               </span>
