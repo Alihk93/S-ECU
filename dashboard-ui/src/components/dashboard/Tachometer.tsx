@@ -170,8 +170,8 @@ export function Tachometer({ rpm, load }: TachometerProps) {
           <div
             className="font-data font-bold leading-none text-[34px] short:text-[28px] md:text-[44px]"
             style={{
-              color: over ? "#ff2d55" : "#06192b",
-              textShadow: over ? "0 0 18px #ff2d55" : "none",
+              color: over ? "#fb5566" : "#eef6f9",
+              textShadow: over ? "0 0 18px #fb5566" : "0 0 12px rgba(34,211,238,0.35)",
             }}
           >
             {Math.round(rpm).toString().padStart(4, "0")}
@@ -181,7 +181,7 @@ export function Tachometer({ rpm, load }: TachometerProps) {
           </div>
         </div>
         <div className="flex flex-col items-center">
-          <div className="font-data text-[20px] font-bold leading-none md:text-[24px]" style={{ color: "#06435a" }}>
+          <div className="font-data text-[20px] font-bold leading-none md:text-[24px]" style={{ color: "#22d3ee" }}>
             {loadPct}
             <span className="text-[12px]">%</span>
           </div>

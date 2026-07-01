@@ -268,6 +268,30 @@ add `cl`/`in` 8-bit masks for real per-channel coil/injector sensing.
   - `App.tsx` — imports `HpPumpArt` and renders it in the **HI P** cell of the INJ GDI panel
     (above the bar reading), replacing the plain readout tile.
   - All hand-drawn SVG (gradients/paths/filters), no raster — constraint #4 upheld.
+- **UPDATED (2026-07-01, dark cobalt restyle):** full visual re-theme — **frontend-only, data
+  contract + layout + all values/numbers/text untouched** — rebuilt, re-embedded into firmware
+  (`index.html` 648631 B / `index.html.gz` 336220 B), committed & pushed (NOT flashed this pass).
+  Requested look: modern/clean/professional, dark **cobalt-navy** (VS Code Cobalt) background,
+  one unified accent, real-dashboard gauges, larger/readable modules. Changes:
+  - `index.css` — theme flipped from the old mid-blue-bg/dark-text scheme to a **dark cobalt**
+    palette (`--background 213 56% 11%`, light `--foreground`, raised navy `--card`; both `:root`
+    and `.dark` since `index.html` sets `class="dark"`). Accent unified to electric cyan
+    (`--primary 187 82% 53%` = `#22d3ee`). **Sci-fi chrome removed** per the clean/minimal choice:
+    deleted the `.scanlines::after` and `.panel-corner::before/::after` rules, softened `.text-glow`
+    /`.glow-box`/`.led`, retuned `.panel` (thin border, subtle sheen, soft shadow) and
+    `.hud-backdrop` (cobalt glow + fainter grid). `--radius` 0.35→0.5rem.
+  - `HudPanel.tsx` — default `accent` → `#22d3ee`, dropped `panel-corner`, `rounded-sm`→`rounded-lg`.
+    `App.tsx` — removed all per-panel `accent="…"` props (rainbow → one accent), dropped the
+    `scanlines` root class, HI-P readout `#06435a`→`#e6edf3` (was dark-on-light, invisible on dark).
+  - Fixed other dark-on-light readouts: `Tachometer.tsx` RPM `#06192b`→`#eef6f9` + LOAD
+    `#06435a`→`#22d3ee`; `TopBar.tsx` chip tones + logo trace (`#16323f`→`#4a6b85`);
+    `CoilIndicator.tsx` +/− tones brightened.
+  - Palette cohesion (functional colors only, no data touched): `tailwind.config.js` `neon.*`,
+    `ecu.ts` `GAUGES[].color`, `WaveformScope`/`CanScope` trace + grid + canvas-tint colors all
+    moved onto the refreshed palette. Scope canvases `#04080b`→`#07131f`.
+  - Verified: `tsc -b` clean, `vite build` clean, rendered headless in Chromium (cobalt theme,
+    unified accents, no scanlines/brackets, all readouts legible). Suggested commit:
+    `style(ui): dark cobalt re-theme — unified accent, clean chrome, readable readouts`.
 - **TRIED & REVERTED (2026-07-01, on-device cover):** briefly flashed a two-route build — animated
   cover at `/` + dashboard at `/app` (cover launches `<iframe src="/app">` same-origin to keep WS
   live). On hardware this was **unstable**: the dashboard flickered/reconnected ~once a second

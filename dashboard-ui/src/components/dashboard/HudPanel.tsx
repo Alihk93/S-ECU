@@ -12,14 +12,14 @@ interface HudPanelProps {
 
 export function HudPanel({
   title,
-  accent = "#00e7f2",
+  accent = "#22d3ee",
   right,
   className,
   bodyClassName,
   children,
 }: HudPanelProps) {
   return (
-    <section className={cn("panel panel-corner rounded-sm", className)}>
+    <section className={cn("panel rounded-lg", className)}>
       {title && (
         <header className="flex items-center justify-between gap-2 border-b border-border/70 px-2.5 py-1 short:px-2.5 short:py-0.5 md:px-3 md:py-2">
           <div className="flex items-center gap-2">
