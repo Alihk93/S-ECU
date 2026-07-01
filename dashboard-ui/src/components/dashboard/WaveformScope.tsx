@@ -99,6 +99,8 @@ export function WaveformScope({
         // trace
         const yMid = top + laneH / 2;
         const amp = laneH / 2 - pad;
+        // all traces sit lower (shorter peak) for a cleaner square-wave look
+        const vScale = 0.6;
         ctx.beginPath();
         for (let x = 0; x <= W; x++) {
           const ang = phase - (1 - x / W) * windowDeg;
@@ -106,7 +108,7 @@ export function WaveformScope({
           if (lane.key === "ckp") v = ckpSample(ang);
           else if (lane.key === "cmp1") v = cmpSample(ang, cmpPhase, cmpMode);
           else v = cmpSample(ang, cmpPhase + 360, cmpMode);
-          const y = yMid + amp - v * 2 * amp;
+          const y = yMid + amp - v * 2 * amp * vScale;
           if (x === 0) ctx.moveTo(x, y);
           else ctx.lineTo(x, y);
         }

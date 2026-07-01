@@ -37,6 +37,9 @@ export function Tachometer({ rpm, load }: TachometerProps) {
   const over = rpm >= RANGES.rpm.redline;
   const redlineT = RANGES.rpm.redline / maxRpm;
   const loadPct = Math.round(clamp(load, 0, 1) * 100);
+  // Needle endpoints computed directly (avoids CSS transform-origin ambiguity on <g>).
+  const needleTip = polar(angle, R + 8); // reach out past the numbers to the tick ring
+  const needleTail = polar(angle + 180, 22); // short counterweight stub
 
   const ticks = useMemo(() => {
     const arr: {
@@ -149,24 +152,15 @@ export function Tachometer({ rpm, load }: TachometerProps) {
           fill="#9fb2bb" fontSize="11" textAnchor="middle"
           fontFamily="'Chakra Petch', sans-serif" letterSpacing="1"
         >
-          1/min&nbsp;x&nbsp;1000
+          x&nbsp;1000
         </text>
 
-        {/* needle */}
-        <g
-          style={{
-            transform: `rotate(${angle}deg)`,
-            transformOrigin: `${CX}px ${CY}px`,
-            transition: "transform 90ms linear",
-          }}
-        >
-          <line
-            x1={CX} y1={CY} x2={CX + (R - 8)} y2={CY}
-            stroke="#ff2a2a" strokeWidth={3.4} strokeLinecap="round"
-            filter="url(#tach-glow)"
-          />
-          <line x1={CX} y1={CY} x2={CX - 20} y2={CY} stroke="#ff2a2a" strokeWidth={4} strokeLinecap="round" />
-        </g>
+        {/* needle — drawn from the tail stub through the pivot out to the tip */}
+        <line
+          x1={needleTail.x} y1={needleTail.y} x2={needleTip.x} y2={needleTip.y}
+          stroke="#ff2a2a" strokeWidth={4} strokeLinecap="round"
+          filter="url(#tach-glow)"
+        />
         <circle cx={CX} cy={CY} r={11} fill="#0c1216" stroke="#ff2a2a" strokeWidth={2.4} />
         <circle cx={CX} cy={CY} r={3.6} fill="#ff2a2a" />
       </svg>

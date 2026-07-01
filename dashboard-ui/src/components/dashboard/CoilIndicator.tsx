@@ -16,7 +16,7 @@ export function CoilIndicator({ index, dwell, spark }: CoilIndicatorProps) {
     <div className="panel flex flex-col items-center gap-0.5 rounded-sm px-1 py-0.5 short:gap-0.5 short:px-1 short:py-0.5 md:gap-1 md:px-1.5 md:py-2">
       <span className="font-data text-[9px] text-muted-foreground">C{index + 1}</span>
 
-      <div className="relative flex h-9 w-6 items-center justify-center short:h-9 short:w-6 md:h-16 md:w-8">
+      <div className="relative flex h-9 w-6 items-center justify-center short:h-9 short:w-6 fit:h-28 fit:w-12">
         <svg
           viewBox="0 0 48 132"
           preserveAspectRatio="xMidYMid meet"

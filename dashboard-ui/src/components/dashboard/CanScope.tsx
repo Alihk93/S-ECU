@@ -90,8 +90,11 @@ export function CanScope({ active = true }: CanScopeProps) {
         ctx.fillText(lane.label, 8, top + 16);
         ctx.globalAlpha = 1;
 
-        const mid = top + laneH / 2; // recessive 2.5 V baseline
-        const amp = laneH / 2 - 9;
+        // Reserve room at the top of a lane whose dominant pulse rises (CAN HI)
+        // so the peak doesn't collide with the lane label.
+        const labelPad = lane.dir < 0 ? 16 : 0;
+        const mid = top + labelPad + (laneH - labelPad) / 2; // recessive 2.5 V baseline
+        const amp = (laneH - labelPad) / 2 - 9;
 
         ctx.beginPath();
         for (let x = 0; x <= W; x++) {

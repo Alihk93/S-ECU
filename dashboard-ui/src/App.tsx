@@ -44,7 +44,7 @@ export default function App() {
           <HudPanel
             title="Analog Sensors"
             accent="#00e7f2"
-            className="flex min-h-0 shrink-0 flex-col short:flex-1 fit:flex-1"
+            className="flex min-h-0 shrink-0 flex-col short:flex-[1.4] fit:flex-[1.4]"
             bodyClassName="grid min-h-0 flex-1 grid-cols-2 grid-rows-3 gap-1 short:gap-1.5 md:gap-2"
           >
             {GAUGES.map((g) => (
@@ -81,7 +81,7 @@ export default function App() {
         {/* ───────── RIGHT: power · coils · injectors · status · GDI ───────── */}
         <div className="flex flex-col gap-1.5 short:col-span-5 short:min-h-0 short:gap-2 fit:col-span-5 fit:min-h-0 fit:gap-2.5">
           <HudPanel title="Power · ECU" accent="#2bff88" className="shrink-0">
-            <PowerDisplay cur={state.cur} ecuV={state.ecuV} amp={state.amp} />
+            <PowerDisplay cur={state.cur} ecuV={state.ecuV} />
           </HudPanel>
 
           <HudPanel title="Ignition Coils ×8" accent="#ff2d3a" className="shrink-0" bodyClassName="grid grid-cols-8 gap-1 sm:gap-1.5">
@@ -96,7 +96,7 @@ export default function App() {
             ))}
           </HudPanel>
 
-          <HudPanel title="Status" accent="#9d6bff" className="shrink-0">
+          <HudPanel className="shrink-0">
             <StatusClusters
               status={state.status}
               iacStep={state.iacStep}

@@ -3,14 +3,13 @@ import { SevenSegDisplay } from "./SevenSegDisplay";
 interface PowerDisplayProps {
   cur: number; // ECU self-consumption (external CT), A
   ecuV: number; // ECU voltage, V
-  amp: number; // engine/system current, A
 }
 
 function fmt(v: number, intDigits: number, dec: number) {
   const s = v.toFixed(dec);
   const [whole] = s.split(".");
   const pad = Math.max(0, intDigits - whole.length);
-  return " ".repeat(pad) + s;
+  return "0".repeat(pad) + s;
 }
 
 // Headline display: three significant digits, each shown with its own decimal
@@ -41,29 +40,29 @@ function LedPanel({ children, className = "" }: { children: React.ReactNode; cla
   );
 }
 
-export function PowerDisplay({ cur, ecuV, amp }: PowerDisplayProps) {
+export function PowerDisplay({ cur, ecuV }: PowerDisplayProps) {
   return (
-    <div className="grid grid-cols-[auto_1fr] items-center gap-2">
+    <div className="grid grid-cols-2 items-stretch gap-2">
       {/* ECU self-consumption current (external CT) — the headline 3-digit display */}
-      <LedPanel>
-        <span className="mb-1 font-display text-[8px] uppercase tracking-widest text-muted-foreground">
+      <LedPanel className="relative">
+        <span className="pointer-events-none absolute left-2 top-1 font-display text-[8px] uppercase tracking-widest text-muted-foreground">
           ECU&nbsp;CT&nbsp;·&nbsp;A
         </span>
-        <div className="flex items-center gap-1">
-          <SevenSegDisplay value={dotted3(cur)} color="#ff3b4d" className="h-7 w-auto md:h-9" />
-          <span className="font-data text-[10px] font-bold text-neon-red">A</span>
+        <span className="pointer-events-none absolute right-2 top-1/2 -translate-y-1/2 font-data text-base font-bold text-neon-red">
+          A
+        </span>
+        <div className="flex min-h-0 min-w-0 flex-1 items-center justify-center pr-3">
+          <SevenSegDisplay value={dotted3(cur)} color="#ff3b4d" className="h-full max-h-[34px] min-h-0 w-full" />
         </div>
       </LedPanel>
 
-      {/* Voltage + engine current */}
-      <LedPanel className="py-1">
-        <div className="flex items-center justify-end gap-1">
-          <SevenSegDisplay value={fmt(ecuV, 2, 1)} color="#2bff88" className="h-5 w-auto md:h-6" />
-          <span className="w-3 font-data text-[10px] font-bold text-neon-green">V</span>
-        </div>
-        <div className="mt-1 flex items-center justify-end gap-1">
-          <SevenSegDisplay value={fmt(amp, 2, 1)} color="#00e7f2" className="h-5 w-auto md:h-6" />
-          <span className="w-3 font-data text-[10px] font-bold text-neon-cyan">A</span>
+      {/* ECU voltage — mirrors the headline so the digits match in size */}
+      <LedPanel className="relative">
+        <span className="pointer-events-none absolute right-2 top-1/2 -translate-y-1/2 font-data text-base font-bold text-neon-green">
+          V
+        </span>
+        <div className="flex min-h-0 min-w-0 flex-1 items-center justify-center pr-3">
+          <SevenSegDisplay value={fmt(ecuV, 2, 2)} color="#2bff88" className="h-full max-h-[34px] min-h-0 w-full" />
         </div>
       </LedPanel>
     </div>

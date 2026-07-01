@@ -217,7 +217,8 @@ add `cl`/`in` 8-bit masks for real per-channel coil/injector sensing.
     **CAN HI/LO scope** (`CanScope.tsx`).
   - **RIGHT:** Power · ECU LED panel (`PowerDisplay.tsx` + `SevenSegDisplay.tsx`: ECU-CT current
     headline + V/A) · Ignition Coils ×8 · Injectors ×8 (port) · Status clusters
-    (`StatusCluster.tsx`: ST·ETC / FPC / FAN / IMO / IAC) · **INJ GDI ×8 + HI P** rail.
+    (`StatusCluster.tsx`: ST·ETC / FPC / FAN / IMO / IAC — see the 2026-07-01 update below for
+    the headerless, icon-per-block layout) · **INJ GDI ×8 + HI P** rail.
   - **Contract extended** with 5 new streamed keys — `cts, igf, cur, amp, hip` — mirrored
     byte-for-byte in `protocol.ts` + `main.c`; CAN traces and GDI injectors are derived
     browser-side (same pattern as CKP/CMP + coils). New SVG art for coils (`CoilIndicator.tsx`,
@@ -225,6 +226,32 @@ add `cl`/`in` 8-bit masks for real per-channel coil/injector sensing.
   - TopBar: wall-clock replaced with a connection-uptime timer; badge "Live · ESP" → "Live";
     IDF chip removed; AP/IP/FPS contrast fixed for the light theme; AL-AYED logo + spark mark.
   - Removed dead components: `RpmBar.tsx`, `VoltageMeter.tsx`, `StatusIndicator.tsx`.
+- **UPDATED (2026-07-01):** Status panel + System rail visual overhaul in
+  `StatusCluster.tsx` (all **frontend-only, data contract untouched**), flashed to hardware:
+  - **System rail icons redrawn as SVG** (no raster, per constraint #4): `BatteryIcon`
+    (automotive battery tell-tale, −/+ knocked out) for BAT and `CarKeyIcon` (car+key
+    immobilizer) for SW ON — both rendered as **warning-lamp lenses** (black lens / red
+    symbol) via a new `lamp` prop on `SystemChip`. MRC+/MRC− use `RelayIcon` (relay
+    schematic) as **white-lens / black-symbol** via a `schematic` prop; when the relay is
+    energized the switch arm drops to a closed horizontal contact and the symbol turns red
+    (`#ff2d3a`, `closed` prop). System chips enlarged to square (`h-14 w-14 md:h-16`).
+  - **Status clusters (`StatusGroup`) stripped and re-laid-out:** group titles
+    (FPC/FAN/IMO/IAC) and lucide icons (Power/Fuel/Fan/Hand/Cog) removed (`title`/`icon`
+    props + lucide import deleted). LED rows pushed to the bottom (`h-full` + `mt-auto`) and
+    **split to opposite corners** (`w-full justify-between`); LED labels (ST/ETC/−/+/1/2)
+    moved **above** the dots. The panel's "STATUS" header was removed (Status `HudPanel` in
+    `App.tsx` no longer passes `title`/`accent`) to give the blocks full height.
+  - **Stylized SVG "part photos" added below the LEDs** (blocks 2–5; ST/ETC has none),
+    sized `art = "h-8 w-8 md:h-9 md:w-9"`: `FuelPumpArt` (Bosch brushed-metal cylinder) for
+    FPC, `FanArt` (Noctua axial fan: beige frame, brown corner mounts, 9 curved blades) for
+    FAN, `ImmobilizerArt` (**key-inside-car** tell-tale: red car side-profile outline + solid
+    key) for IMO, `IacValveArt` (black stepper valve + copper collar + spring + pintle) for
+    IAC. All hand-drawn SVG (reference photos redrawn, never embedded as raster).
+  - Injector spray: `InjectorAnimation.tsx` now renders a soft blurred misty cone below each
+    injector (port + GDI) when it pulses (`mist` keyframe in `index.css`); port bank redrawn
+    as a Bosch-style injector (`PortInjectorSvg`) while the GDI bank keeps its original art
+    (`GdiInjectorSvg`), branched on `prefix === "G"`; gauge label moved above center + digital
+    readout moved to the bottom of the dial in `Gauge.tsx`.
 - **NOT YET TESTED:** on-device visual confirmation of the new layout; multi-client broadcast,
   gauge latency under load, pot→load mapping, every status bit — bench test pending.
 
