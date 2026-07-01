@@ -29,7 +29,6 @@ export function Tachometer({ rpm, load }: TachometerProps) {
   const maxRpm = MAX_K * 1000;
   const t = clamp(rpm / maxRpm, 0, 1);
   const angle = START + t * SWEEP;
-  const over = rpm >= RANGES.rpm.redline;
   const redlineT = RANGES.rpm.redline / maxRpm;
   const loadPct = Math.round(clamp(load, 0, 1) * 100);
 
@@ -94,9 +93,6 @@ export function Tachometer({ rpm, load }: TachometerProps) {
               <feMergeNode in="SourceGraphic" />
             </feMerge>
           </filter>
-          <filter id="tt-glow" x="-60%" y="-60%" width="220%" height="220%">
-            <feGaussianBlur stdDeviation="0.7" />
-          </filter>
         </defs>
 
         {/* bezel + metallic ring + black dished face */}
@@ -138,59 +134,6 @@ export function Tachometer({ rpm, load }: TachometerProps) {
           </g>
         ))}
 
-        {/* ---- centre warning tell-tale lamps (decorative cluster) ---- */}
-        <g filter="url(#tt-glow)">
-          {/* high beam (blue) */}
-          <g transform="translate(70,78)">
-            <path d="M2 -5 A5 5 0 0 0 2 5 Z" fill="#3b9dff" />
-            <g stroke="#3b9dff" strokeWidth="1.3" strokeLinecap="round">
-              <line x1="-1" y1="-4" x2="-6" y2="-4" />
-              <line x1="-1" y1="0" x2="-6" y2="0" />
-              <line x1="-1" y1="4" x2="-6" y2="4" />
-            </g>
-          </g>
-
-          {/* coolant temperature (red) */}
-          <g transform="translate(100,60)">
-            <g stroke="#ff3b3b" strokeWidth="1.3" fill="none" strokeLinecap="round">
-              <line x1="0" y1="-6" x2="0" y2="2" />
-              <line x1="-2.6" y1="-4" x2="0" y2="-4" />
-              <line x1="-2.6" y1="-1.5" x2="0" y2="-1.5" />
-              <line x1="-2.6" y1="1" x2="0" y2="1" />
-            </g>
-            <circle cx="0" cy="4" r="2.2" fill="#ff3b3b" />
-            <path d="M-6 8 q1.5 -1.7 3 0 t3 0" stroke="#ff3b3b" strokeWidth="1.2" fill="none" />
-          </g>
-
-          {/* battery / charge (red) */}
-          <g transform="translate(130,78)">
-            <rect x="-6" y="-3" width="12" height="7" rx="1" fill="none" stroke="#ff3b3b" strokeWidth="1.3" />
-            <rect x="-4.5" y="-5" width="2.4" height="2" fill="#ff3b3b" />
-            <rect x="2.1" y="-5" width="2.4" height="2" fill="#ff3b3b" />
-            <line x1="-4" y1="0.5" x2="-1.6" y2="0.5" stroke="#ff3b3b" strokeWidth="1.2" strokeLinecap="round" />
-            <line x1="1.6" y1="0.5" x2="4" y2="0.5" stroke="#ff3b3b" strokeWidth="1.2" strokeLinecap="round" />
-            <line x1="2.8" y1="-0.7" x2="2.8" y2="1.7" stroke="#ff3b3b" strokeWidth="1.2" strokeLinecap="round" />
-          </g>
-
-          {/* oil pressure (red) */}
-          <g transform="translate(80,118)">
-            <path
-              d="M-7 1 q0 -3 3 -3 h3.5 q1 0 1.6 0.8 l3.4 -1.8 l0.7 1.5 l-3.4 1.7 v0.6 q0 2 -2.2 2 h-3.6 q-3 0 -3 -2.5 z"
-              fill="#ff3b3b"
-            />
-            <circle cx="7.4" cy="3.6" r="1" fill="#ff3b3b" />
-          </g>
-
-          {/* brake / warning (red) */}
-          <g transform="translate(120,118)">
-            <circle cx="0" cy="0" r="5" fill="none" stroke="#ff3b3b" strokeWidth="1.2" />
-            <path d="M-8 -3 q-1.6 3 0 6" fill="none" stroke="#ff3b3b" strokeWidth="1.2" strokeLinecap="round" />
-            <path d="M8 -3 q1.6 3 0 6" fill="none" stroke="#ff3b3b" strokeWidth="1.2" strokeLinecap="round" />
-            <rect x="-0.7" y="-3" width="1.4" height="3.6" rx="0.6" fill="#ff3b3b" />
-            <circle cx="0" cy="2.4" r="0.9" fill="#ff3b3b" />
-          </g>
-        </g>
-
         {/* needle */}
         <line
           x1={tail.x} y1={tail.y} x2={tip.x} y2={tip.y}
@@ -200,23 +143,22 @@ export function Tachometer({ rpm, load }: TachometerProps) {
         <circle cx={CX} cy={CY} r={10} fill="#0c1216" stroke="#ff2a2a" strokeWidth={2.2} />
         <circle cx={CX} cy={CY} r={3.4} fill="#ff2a2a" />
 
-        {/* caption + compact digital readout */}
+        {/* caption + rpm readout (down) */}
         <text
           x={CX} y={150}
           fill="#9fb2bb" fontSize="8" textAnchor="middle"
-          fontFamily="'Chakra Petch', sans-serif" letterSpacing="1"
+          fontFamily="'Chakra Petch', sans-serif" letterSpacing="1.5"
         >
-          1/min x 1000
+          x 1000
         </text>
         <text
-          x={CX} y={166}
-          fill={over ? "#ff5260" : "#eef6f9"} fontSize="12" fontWeight="700"
+          x={CX} y={168}
+          fill="#eef6f9" fontSize="15" fontWeight="700"
           textAnchor="middle" fontFamily="'JetBrains Mono', monospace"
         >
           {Math.round(rpm)}
           <tspan fill="#7f9bb5" fontSize="8" fontWeight="600"> rpm</tspan>
           <tspan fill="#22d3ee" fontSize="10"> · {loadPct}%</tspan>
-          {over && <tspan fill="#ff5260" fontSize="8" fontWeight="700"> · SHIFT</tspan>}
         </text>
       </svg>
     </div>
