@@ -19,7 +19,7 @@ export default function App() {
   const running = state.rpm > 0;
 
   return (
-    <div className="hud-backdrop scanlines relative flex h-dvh w-full flex-col gap-1.5 overflow-hidden p-1.5 text-foreground short:gap-1.5 short:p-1.5 md:gap-2.5 md:p-2.5">
+    <div className="hud-backdrop relative flex h-dvh w-full flex-col gap-1.5 overflow-hidden p-1.5 text-foreground short:gap-1.5 short:p-1.5 md:gap-2.5 md:p-2.5">
       <TopBar fps={fps} linkStatus={link.status} />
 
       {/* Main grid — stacked & scrollable on phones; locked 3-column no-scroll on
@@ -29,7 +29,6 @@ export default function App() {
         <div className="flex flex-col gap-1.5 short:col-span-3 short:min-h-0 short:gap-2 fit:col-span-3 fit:min-h-0 fit:gap-2.5">
           <HudPanel
             title="Oscilloscope · CKP / CMP1 / CMP2"
-            accent="#ff36c8"
             className="flex min-h-0 shrink-0 flex-col short:flex-1 fit:flex-1"
             bodyClassName="flex-1 min-h-0"
           >
@@ -43,7 +42,6 @@ export default function App() {
 
           <HudPanel
             title="Analog Sensors"
-            accent="#00e7f2"
             className="flex min-h-0 shrink-0 flex-col short:flex-[1.4] fit:flex-[1.4]"
             bodyClassName="grid min-h-0 flex-1 grid-cols-2 grid-rows-3 gap-1 short:gap-1.5 md:gap-2"
           >
@@ -52,7 +50,7 @@ export default function App() {
             ))}
           </HudPanel>
 
-          <HudPanel title="System" accent="#2bff88" className="shrink-0">
+          <HudPanel title="System" className="shrink-0">
             <SystemIcons status={state.status} className="flex items-start justify-around gap-2" />
           </HudPanel>
         </div>
@@ -61,7 +59,6 @@ export default function App() {
         <div className="flex flex-col gap-1.5 short:col-span-4 short:min-h-0 short:gap-2 fit:col-span-4 fit:min-h-0 fit:gap-2.5">
           <HudPanel
             title="Engine Speed · RBM"
-            accent="#ff2d55"
             className="flex min-h-0 shrink-0 flex-col short:flex-1 fit:flex-1"
             bodyClassName="flex-1 min-h-0 flex"
           >
@@ -70,7 +67,6 @@ export default function App() {
 
           <HudPanel
             title="CAN Bus · HI / LO"
-            accent="#00e7f2"
             className="flex min-h-0 shrink-0 flex-col short:h-[34%] fit:h-[34%]"
             bodyClassName="flex-1 min-h-0"
           >
@@ -80,17 +76,17 @@ export default function App() {
 
         {/* ───────── RIGHT: power · coils · injectors · status · GDI ───────── */}
         <div className="flex flex-col gap-1.5 short:col-span-5 short:min-h-0 short:gap-2 fit:col-span-5 fit:min-h-0 fit:gap-2.5">
-          <HudPanel title="Power · ECU" accent="#2bff88" className="shrink-0">
+          <HudPanel title="Power · ECU" className="shrink-0">
             <PowerDisplay cur={state.cur} ecuV={state.ecuV} />
           </HudPanel>
 
-          <HudPanel title="Ignition Coils ×8" accent="#ff2d3a" className="shrink-0" bodyClassName="grid grid-cols-8 gap-1 sm:gap-1.5">
+          <HudPanel title="Ignition Coils ×8" className="shrink-0" bodyClassName="grid grid-cols-8 gap-1 sm:gap-1.5">
             {Array.from({ length: CYL_COUNT }).map((_, i) => (
               <CoilIndicator key={i} index={i} dwell={state.coils[i]} spark={state.coilSpark[i]} />
             ))}
           </HudPanel>
 
-          <HudPanel title="Injectors ×8" accent="#29c2ff" className="shrink-0" bodyClassName="grid grid-cols-8 gap-1 sm:gap-1.5">
+          <HudPanel title="Injectors ×8" className="shrink-0" bodyClassName="grid grid-cols-8 gap-1 sm:gap-1.5">
             {Array.from({ length: CYL_COUNT }).map((_, i) => (
               <InjectorAnimation key={i} index={i} value={state.injectors[i]} prefix="I" />
             ))}
@@ -104,12 +100,12 @@ export default function App() {
             />
           </HudPanel>
 
-          <HudPanel title="INJ GDI ×8" accent="#29c2ff" className="shrink-0" bodyClassName="grid grid-cols-9 items-stretch gap-1 sm:gap-1.5">
+          <HudPanel title="INJ GDI ×8" className="shrink-0" bodyClassName="grid grid-cols-9 items-stretch gap-1 sm:gap-1.5">
             {/* HI P — GDI high-pressure fuel rail */}
-            <div className="panel flex flex-col items-center justify-center gap-0.5 rounded-sm px-1 py-1">
+            <div className="panel flex flex-col items-center justify-center gap-0.5 rounded-md px-1 py-1">
               <span className="font-display text-[9px] uppercase tracking-hud text-muted-foreground">HI&nbsp;P</span>
               <HpPumpArt className="min-h-0 w-full flex-1" />
-              <span className="font-data text-base font-bold leading-none" style={{ color: "#06435a" }}>
+              <span className="font-data text-base font-bold leading-none" style={{ color: "#e6edf3" }}>
                 {Math.round(state.hip)}
               </span>
               <span className="font-data text-[8px] text-muted-foreground">bar</span>

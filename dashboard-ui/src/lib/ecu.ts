@@ -17,12 +17,12 @@ export type GaugeKey = "maf" | "map" | "iat" | "cts" | "igf" | "sensorV";
 // Left analog cluster, laid out 2×3 to match the panel sketch:
 // CTS · MAF / MAP · IAT / 5V · IGF
 export const GAUGES: GaugeDef[] = [
-  { key: "cts", label: "CTS", unit: "°C", min: 0, max: 130, color: "#ff7a18", warn: 110 },
-  { key: "maf", label: "MAF", unit: "g/s", min: 0, max: 400, color: "#00e7f2" },
-  { key: "map", label: "MAP", unit: "kPa", min: 0, max: 250, color: "#9d6bff" },
-  { key: "iat", label: "IAT", unit: "°C", min: 0, max: 120, color: "#ffb000", warn: 85 },
-  { key: "sensorV", label: "5V", unit: "V", min: 0, max: 5, color: "#2d8bff", decimals: 1 },
-  { key: "igf", label: "IGF", unit: "%", min: 0, max: 100, color: "#b6ff3c" },
+  { key: "cts", label: "CTS", unit: "°C", min: 0, max: 130, color: "#fb923c", warn: 110 },
+  { key: "maf", label: "MAF", unit: "g/s", min: 0, max: 400, color: "#22d3ee" },
+  { key: "map", label: "MAP", unit: "kPa", min: 0, max: 250, color: "#a78bfa" },
+  { key: "iat", label: "IAT", unit: "°C", min: 0, max: 120, color: "#fbbf24", warn: 85 },
+  { key: "sensorV", label: "5V", unit: "V", min: 0, max: 5, color: "#38bdf8", decimals: 1 },
+  { key: "igf", label: "IGF", unit: "%", min: 0, max: 100, color: "#a3e635" },
 ];
 
 export interface VoltageDef {

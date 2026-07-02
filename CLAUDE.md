@@ -268,6 +268,60 @@ add `cl`/`in` 8-bit masks for real per-channel coil/injector sensing.
   - `App.tsx` — imports `HpPumpArt` and renders it in the **HI P** cell of the INJ GDI panel
     (above the bar reading), replacing the plain readout tile.
   - All hand-drawn SVG (gradients/paths/filters), no raster — constraint #4 upheld.
+- **UPDATED (2026-07-01, dark cobalt restyle):** full visual re-theme — **frontend-only, data
+  contract + layout + all values/numbers/text untouched** — rebuilt, re-embedded into firmware
+  (`index.html` 648631 B / `index.html.gz` 336220 B), committed & pushed (NOT flashed this pass).
+  Requested look: modern/clean/professional, dark **cobalt-navy** (VS Code Cobalt) background,
+  one unified accent, real-dashboard gauges, larger/readable modules. Changes:
+  - `index.css` — theme flipped from the old mid-blue-bg/dark-text scheme to a **dark cobalt**
+    palette (`--background 213 56% 11%`, light `--foreground`, raised navy `--card`; both `:root`
+    and `.dark` since `index.html` sets `class="dark"`). Accent unified to electric cyan
+    (`--primary 187 82% 53%` = `#22d3ee`). **Sci-fi chrome removed** per the clean/minimal choice:
+    deleted the `.scanlines::after` and `.panel-corner::before/::after` rules, softened `.text-glow`
+    /`.glow-box`/`.led`, retuned `.panel` (thin border, subtle sheen, soft shadow) and
+    `.hud-backdrop` (cobalt glow + fainter grid). `--radius` 0.35→0.5rem.
+  - `HudPanel.tsx` — default `accent` → `#22d3ee`, dropped `panel-corner`, `rounded-sm`→`rounded-lg`.
+    `App.tsx` — removed all per-panel `accent="…"` props (rainbow → one accent), dropped the
+    `scanlines` root class, HI-P readout `#06435a`→`#e6edf3` (was dark-on-light, invisible on dark).
+  - Fixed other dark-on-light readouts: `Tachometer.tsx` RPM `#06192b`→`#eef6f9` + LOAD
+    `#06435a`→`#22d3ee`; `TopBar.tsx` chip tones + logo trace (`#16323f`→`#4a6b85`);
+    `CoilIndicator.tsx` +/− tones brightened.
+  - Palette cohesion (functional colors only, no data touched): `tailwind.config.js` `neon.*`,
+    `ecu.ts` `GAUGES[].color`, `WaveformScope`/`CanScope` trace + grid + canvas-tint colors all
+    moved onto the refreshed palette. Scope canvases `#04080b`→`#07131f`.
+  - Verified: `tsc -b` clean, `vite build` clean, rendered headless in Chromium (cobalt theme,
+    unified accents, no scanlines/brackets, all readouts legible). Suggested commit:
+    `style(ui): dark cobalt re-theme — unified accent, clean chrome, readable readouts`.
+- **UPDATED (2026-07-01, digital EV-cluster component redesign):** the cobalt re-theme above only
+  recolored; this pass **redesigns the components themselves** (still frontend-only, data contract +
+  layout + all values/numbers/text untouched). Rebuilt + re-embedded (`index.html` 621971 B /
+  `index.html.gz` 331092 B), verified with a local WS test-feed rendered headless in Chromium.
+  - `Gauge.tsx` — rewritten from the round dished dial to a **radial-arc gauge**: thick 270° track,
+    glowing colored progress sweep (SVG `pathLength`+`strokeDasharray`), tip marker, big centered
+    digital value (still the 0–5 V mapping) + label + "VOLT". Zero-value round-cap dot suppressed.
+  - `Tachometer.tsx` — rewritten from the half-circle needle to a **bold 270° EV arc**: rpm sweep
+    (red past redline), inner LOAD arc, ×1000 numeric labels, huge centered rpm readout. Same
+    0–8 ×1000 / 6500 redline.
+  - `ChannelCell.tsx` (NEW) — one unified indicator (rounded tile, glyph that glows/fills with
+    activity, activity bar). `CoilIndicator.tsx` (spark bolt, red→gold on fire) and
+    `InjectorAnimation.tsx` (fuel droplet, port "I" + GDI "G") now both render it, replacing the
+    skeuomorphic pencil-coil / Bosch-injector SVGs so every coil/injector shares one style.
+    `HpPumpArt` replaced with a clean pressure-gauge line glyph (used in the HI P tile).
+  - `StatusCluster.tsx` — rewritten: `StatusClusters` + `SystemIcons` now use **lucide glyphs**
+    (Power/Fuel/Fan/ShieldCheck/Cog and Battery/KeyRound/ToggleRight) in glowing icon+LED tiles,
+    replacing the fuel-pump/fan/immobilizer/IAC part-drawings. LED colours on the refreshed palette.
+  - `HudPanel.tsx` — cleaner header (larger title, rounded pill accent, more body padding).
+  - Suggested commit: `feat(ui): digital EV-cluster redesign — radial gauges, unified indicator tiles`.
+- **UPDATED (2026-07-01, analog tach per user reference photo):** `Tachometer.tsx` rewritten again —
+  the EV arc was swapped for a **classic analog cluster tach** matching a user-supplied VW/Audi-style
+  photo: round black dished radial-gradient face, **blue segmented outer ring** with a red redline
+  zone, white 0–8 numbers + major/minor ticks, a **red sweep needle** + hub, and a cluster of centre
+  **warning tell-tale lamps** (high-beam blue; coolant-temp / battery / oil / brake red — currently
+  **decorative**, not wired to status) with the **"1/min x 1000"** caption. A compact
+  `<rpm> rpm · <load>%` line under the caption preserves the digital rpm + LOAD readout. Scale/values
+  unchanged (0–8 ×1000, 6500 redline); frontend-only, contract untouched. Rebuilt + re-embedded
+  (`index.html.gz` 331713 B). Open item: wire the tell-tales to live data if wanted (coolant→CTS
+  warn, battery→status bit). Suggested commit: `feat(ui): analog cluster tachometer (needle + tell-tales)`.
 - **TRIED & REVERTED (2026-07-01, on-device cover):** briefly flashed a two-route build — animated
   cover at `/` + dashboard at `/app` (cover launches `<iframe src="/app">` same-origin to keep WS
   live). On hardware this was **unstable**: the dashboard flickered/reconnected ~once a second
