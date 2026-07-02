@@ -109,7 +109,7 @@ export default function App() {
             <div className="panel flex flex-col items-center justify-center gap-0.5 rounded-sm px-1 py-1">
               <span className="font-display text-[9px] uppercase tracking-hud text-muted-foreground">HI&nbsp;P</span>
               <HpPumpArt className="min-h-0 w-full flex-1" />
-              <span className="font-data text-base font-bold leading-none" style={{ color: "#06435a" }}>
+              <span className="font-data text-base font-bold leading-none" style={{ color: "#ff9d3c", textShadow: "0 0 10px rgba(255,122,24,0.5)" }}>
                 {Math.round(state.hip)}
               </span>
               <span className="font-data text-[8px] text-muted-foreground">bar</span>

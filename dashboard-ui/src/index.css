@@ -4,24 +4,27 @@
 
 @layer base {
   :root {
-    --background: 207 45% 38%;
-    --foreground: 209 55% 12%;
-    --card: 206 40% 47%;
-    --card-foreground: 209 55% 12%;
-    --popover: 209 38% 5%;
-    --popover-foreground: 209 55% 12%;
+    /* Cobalt navy (VS Code "Cobalt2" family) — deep blue instrument cockpit,
+       light cool-white foreground. Panels are a slightly lifted navy so the
+       black instrument faces read as inset. */
+    --background: 205 54% 11%;
+    --foreground: 200 34% 93%;
+    --card: 206 44% 16%;
+    --card-foreground: 200 34% 93%;
+    --popover: 206 50% 8%;
+    --popover-foreground: 200 34% 93%;
     --primary: 187 100% 50%;
-    --primary-foreground: 209 50% 4%;
-    --secondary: 206 38% 72%;
-    --secondary-foreground: 209 50% 16%;
-    --muted: 206 35% 68%;
-    --muted-foreground: 209 42% 16%;
-    --accent: 187 90% 45%;
-    --accent-foreground: 209 50% 4%;
-    --destructive: 348 100% 56%;
+    --primary-foreground: 206 60% 6%;
+    --secondary: 205 38% 22%;
+    --secondary-foreground: 200 30% 90%;
+    --muted: 205 34% 20%;
+    --muted-foreground: 202 24% 66%;
+    --accent: 187 90% 52%;
+    --accent-foreground: 206 60% 6%;
+    --destructive: 348 100% 60%;
     --destructive-foreground: 0 0% 98%;
-    --border: 203 35% 60%;
-    --input: 203 35% 60%;
+    --border: 204 32% 26%;
+    --input: 204 32% 26%;
     --ring: 187 100% 50%;
     --radius: 0.35rem;
 
@@ -35,28 +38,28 @@
     --neon-red: #ff2d55;
     --neon-magenta: #ff36c8;
     --neon-violet: #9d6bff;
-    --grid-line: rgba(50, 110, 130, 0.14);
+    --grid-line: rgba(70, 140, 170, 0.10);
   }
 
   .dark {
-    --background: 207 45% 38%;
-    --foreground: 209 55% 12%;
-    --card: 206 40% 47%;
-    --card-foreground: 209 55% 12%;
-    --popover: 209 38% 5%;
-    --popover-foreground: 209 55% 12%;
+    --background: 205 54% 11%;
+    --foreground: 200 34% 93%;
+    --card: 206 44% 16%;
+    --card-foreground: 200 34% 93%;
+    --popover: 206 50% 8%;
+    --popover-foreground: 200 34% 93%;
     --primary: 187 100% 50%;
-    --primary-foreground: 209 50% 4%;
-    --secondary: 206 38% 72%;
-    --secondary-foreground: 209 50% 16%;
-    --muted: 206 35% 68%;
-    --muted-foreground: 209 42% 16%;
-    --accent: 187 90% 45%;
-    --accent-foreground: 209 50% 4%;
-    --destructive: 348 100% 56%;
+    --primary-foreground: 206 60% 6%;
+    --secondary: 205 38% 22%;
+    --secondary-foreground: 200 30% 90%;
+    --muted: 205 34% 20%;
+    --muted-foreground: 202 24% 66%;
+    --accent: 187 90% 52%;
+    --accent-foreground: 206 60% 6%;
+    --destructive: 348 100% 60%;
     --destructive-foreground: 0 0% 98%;
-    --border: 203 35% 60%;
-    --input: 203 35% 60%;
+    --border: 204 32% 26%;
+    --input: 204 32% 26%;
     --ring: 187 100% 50%;
   }
 }
@@ -92,15 +95,19 @@
     letter-spacing: 0.18em;
   }
 
-  /* Ambient backdrop: vignette + faint engineering grid */
+  /* Ambient cobalt backdrop: top cyan wash + corner glow, a deep base gradient
+     and a faint engineering grid. */
   .hud-backdrop {
     background-color: hsl(var(--background));
     background-image:
-      radial-gradient(120% 100% at 50% -10%, rgba(0, 231, 242, 0.06), transparent 60%),
-      radial-gradient(100% 120% at 110% 110%, rgba(157, 107, 255, 0.05), transparent 55%),
+      radial-gradient(130% 90% at 50% -12%, rgba(0, 231, 242, 0.10), transparent 58%),
+      radial-gradient(110% 120% at 112% 114%, rgba(45, 139, 255, 0.10), transparent 55%),
+      radial-gradient(120% 130% at 50% 120%, rgba(4, 12, 20, 0.55), transparent 60%),
+      linear-gradient(180deg, hsl(205 52% 13%), hsl(206 58% 8%)),
       linear-gradient(var(--grid-line) 1px, transparent 1px),
       linear-gradient(90deg, var(--grid-line) 1px, transparent 1px);
-    background-size: 100% 100%, 100% 100%, 34px 34px, 34px 34px;
+    background-size:
+      100% 100%, 100% 100%, 100% 100%, 100% 100%, 34px 34px, 34px 34px;
   }
 
   .scanlines::after {
@@ -116,18 +123,20 @@
       rgba(0, 0, 0, 0) 4px
     );
     mix-blend-mode: overlay;
-    opacity: 0.5;
+    opacity: 0.28;
   }
 
   .panel {
     position: relative;
     border: 1px solid hsl(var(--border));
+    border-radius: 0.5rem;
     background:
-      linear-gradient(180deg, rgba(255, 255, 255, 0.10), rgba(0, 0, 0, 0.12)),
+      linear-gradient(180deg, rgba(120, 190, 230, 0.07), rgba(0, 0, 0, 0.22)),
       hsl(var(--card));
     box-shadow:
-      inset 0 1px 0 rgba(255, 255, 255, 0.14),
-      0 8px 22px -14px rgba(0, 0, 0, 0.65);
+      inset 0 1px 0 rgba(150, 205, 240, 0.10),
+      inset 0 0 0 1px rgba(0, 0, 0, 0.20),
+      0 12px 30px -16px rgba(0, 0, 0, 0.85);
   }
   .panel-corner::before,
   .panel-corner::after {

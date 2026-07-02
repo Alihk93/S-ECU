@@ -169,13 +169,13 @@ export function CoilIndicator({ index, dwell, spark }: CoilIndicatorProps) {
       <div className="hidden w-full items-center justify-between px-0.5 short:hidden md:flex">
         <span
           className="font-data text-[8px]"
-          style={{ color: charging ? "#c01030" : "#33414f" }}
+          style={{ color: charging ? "#ff4d5a" : "#5b7387" }}
         >
           +
         </span>
         <span
           className="font-data text-[8px]"
-          style={{ color: spark ? "#a85f00" : "#33414f" }}
+          style={{ color: spark ? "#ffb000" : "#5b7387" }}
         >
           −
         </span>
