@@ -133,143 +133,130 @@ function PortInjectorSvg({ uid, value, active }: { uid: string; value: number; a
   );
 }
 
-// GDI injector ("G" bank) — original smart-injector art: black connector + blue
-// inlet O-ring, marked black body, a translucent core showing a cyan driver
-// PCB, and a metallic basket nozzle that sprays when energized.
+// GDI injector ("G" bank) — redrawn after the reference smart-injector photo:
+// black keyed connector (PA66 markings), blue inlet O-ring, a clear window over
+// a silvery driver PCB, and a fluted chrome basket nozzle that sprays when
+// energized (PCB + director tip brighten with injection intensity).
 function GdiInjectorSvg({ uid, value, active }: { uid: string; value: number; active: boolean }) {
+  const glow = 0.4 + value * 0.6;
   return (
     <svg
       viewBox="0 0 48 132"
       preserveAspectRatio="xMidYMid meet"
       className="h-full w-full"
       style={{
-        filter: active ? `drop-shadow(0 0 ${2 + value * 8}px #29c2ff)` : "none",
+        filter: active ? `drop-shadow(0 0 ${2 + value * 8}px #7fe7ff)` : "none",
         transition: "filter 60ms linear",
       }}
     >
       <defs>
         <linearGradient id={`inj-black-${uid}`} x1="0" y1="0" x2="1" y2="0">
-          <stop offset="0%" stopColor="#454b51" />
-          <stop offset="45%" stopColor="#181b1e" />
-          <stop offset="100%" stopColor="#2c3236" />
+          <stop offset="0%" stopColor="#4a5158" />
+          <stop offset="30%" stopColor="#20262b" />
+          <stop offset="60%" stopColor="#0c1013" />
+          <stop offset="100%" stopColor="#2b3237" />
         </linearGradient>
         <linearGradient id={`inj-metal-${uid}`} x1="0" y1="0" x2="1" y2="0">
-          <stop offset="0%" stopColor="#f2f5f7" />
-          <stop offset="45%" stopColor="#aab4ba" />
-          <stop offset="70%" stopColor="#dde3e6" />
-          <stop offset="100%" stopColor="#8d979d" />
+          <stop offset="0%" stopColor="#f4f7f9" />
+          <stop offset="42%" stopColor="#a9b3b9" />
+          <stop offset="68%" stopColor="#e4eaec" />
+          <stop offset="100%" stopColor="#828c92" />
         </linearGradient>
-        <linearGradient id={`inj-body-${uid}`} x1="0" y1="0" x2="1" y2="0">
-          <stop offset="0%" stopColor="#b9c2c8" />
-          <stop offset="50%" stopColor="#e8edf0" />
-          <stop offset="100%" stopColor="#9aa4aa" />
+        <linearGradient id={`inj-clear-${uid}`} x1="0" y1="0" x2="1" y2="0">
+          <stop offset="0%" stopColor="#cfdae0" stopOpacity="0.55" />
+          <stop offset="50%" stopColor="#eef4f6" stopOpacity="0.28" />
+          <stop offset="100%" stopColor="#a7b2b8" stopOpacity="0.5" />
         </linearGradient>
       </defs>
 
-      {/* fuel inlet (top-right) with blue O-ring */}
-      <rect x="26" y="4" width="11" height="20" rx="3" fill={`url(#inj-black-${uid})`} />
-      <rect x="25.5" y="8" width="12" height="4" rx="2" fill="#2f6fd6" />
-      <rect x="25.5" y="8" width="12" height="1.4" rx="0.7" fill="#7fb0ff" />
+      {/* top fuel inlet: chrome ring + blue O-ring */}
+      <ellipse cx="24" cy="4" rx="6.5" ry="2.4" fill={`url(#inj-metal-${uid})`} />
+      <rect x="17.5" y="4.5" width="13" height="5" rx="2.4" fill="#2f6fd6" />
+      <rect x="17.5" y="4.8" width="13" height="1.6" rx="0.8" fill="#8fb8ff" opacity="0.85" />
 
-      {/* angled electrical connector (upper-left) */}
-      <g transform="rotate(-30 16 16)">
-        <rect
-          x="0"
-          y="7"
-          width="20"
-          height="17"
-          rx="3"
-          fill={`url(#inj-black-${uid})`}
-          stroke="#0c0e10"
-          strokeWidth="0.6"
-        />
-        <rect x="3" y="11" width="7" height="9" rx="1.5" fill="#0d0f11" />
+      {/* angled black keyed connector (upper-left) */}
+      <g transform="rotate(-40 15 22)">
+        <rect x="-1" y="12" width="19" height="17" rx="3.5" fill={`url(#inj-black-${uid})`} stroke="#050708" strokeWidth="0.6" />
+        <rect x="1.5" y="15" width="9" height="11" rx="1.6" fill="#0a0c0e" />
+        <rect x="3" y="17" width="6" height="7" rx="1" fill="#1b2024" />
+        <rect x="12" y="27" width="5" height="4" rx="1" fill={`url(#inj-black-${uid})`} />
       </g>
 
-      {/* black marked body */}
-      <rect
-        x="15"
-        y="22"
-        width="24"
-        height="38"
-        rx="4"
-        fill={`url(#inj-black-${uid})`}
-        stroke="#0c0e10"
-        strokeWidth="0.8"
-      />
-      {/* part markings */}
-      <g stroke="#7f8890" strokeWidth="1" opacity="0.7" strokeLinecap="round">
-        <line x1="20" x2="34" y1="31" y2="31" />
-        <line x1="20" x2="30" y1="38" y2="38" />
-        <line x1="20" x2="33" y1="45" y2="45" />
-        <line x1="20" x2="31" y1="52" y2="52" />
+      {/* black marked upper body */}
+      <rect x="16" y="9" width="17" height="41" rx="4" fill={`url(#inj-black-${uid})`} stroke="#050708" strokeWidth="0.7" />
+      <rect x="16" y="11.5" width="17" height="2" rx="1" fill={`url(#inj-metal-${uid})`} opacity="0.7" />
+      {/* faint moulded markings */}
+      <g fill="#8c959b" opacity="0.6" fontFamily="'Chakra Petch', sans-serif">
+        <text x="24.5" y="24" fontSize="4" textAnchor="middle">PA66</text>
+        <text x="24.5" y="31" fontSize="4" textAnchor="middle">550</text>
+        <text x="24.5" y="38" fontSize="4" textAnchor="middle">23-4</text>
+        <text x="24.5" y="45" fontSize="3.4" textAnchor="middle">2-02-01</text>
+      </g>
+      <g stroke="#3a4045" strokeWidth="0.5" opacity="0.7">
+        <line x1="17" x2="32" y1="27" y2="27" />
+        <line x1="17" x2="32" y1="34" y2="34" />
+        <line x1="17" x2="32" y1="41" y2="41" />
       </g>
 
-      {/* translucent body */}
-      <rect
-        x="16.5"
-        y="60"
-        width="21"
-        height="44"
-        rx="4"
-        fill={`url(#inj-body-${uid})`}
-        stroke="#8d979d"
-        strokeWidth="0.6"
-      />
-      {/* internal mesh */}
-      <g stroke="#aeb8be" strokeWidth="0.5" opacity="0.55">
-        {Array.from({ length: 8 }).map((_, i) => (
-          <line key={i} x1="18" x2="36" y1={64 + i * 5} y2={64 + i * 5} />
+      {/* clear window body */}
+      <rect x="15" y="49" width="18" height="47" rx="4" fill={`url(#inj-clear-${uid})`} stroke="#8fa0a6" strokeWidth="0.5" />
+      {/* wavy potting flanks */}
+      <g stroke="#c9d4d9" strokeWidth="0.5" opacity="0.5" fill="none">
+        {Array.from({ length: 9 }).map((_, i) => (
+          <path key={i} d={`M16 ${52 + i * 4.6} q2 -1.8 4 0`} />
+        ))}
+        {Array.from({ length: 9 }).map((_, i) => (
+          <path key={`r${i}`} d={`M28 ${52 + i * 4.6} q2 -1.8 4 0`} />
         ))}
       </g>
 
-      {/* glowing cyan driver PCB (brightens with injection intensity) */}
-      <g opacity={0.35 + value * 0.65} style={{ transition: "opacity 60ms linear" }}>
-        <rect x="20" y="64" width="14" height="36" rx="1" fill="#0c3140" />
-        <g stroke="#7fe7ff" strokeWidth="0.7" fill="none" strokeLinecap="round">
-          <path d="M22 68 H31 M22 68 V74 M31 68 V72" />
-          <path d="M24 78 H32 M24 78 V84" />
-          <path d="M22 88 H30 M30 88 V94 M26 94 H32" />
+      {/* silvery driver PCB (brightens with injection intensity) */}
+      <g opacity={glow} style={{ transition: "opacity 60ms linear" }}>
+        <rect x="19.5" y="52" width="9" height="41" rx="1" fill="#16242b" />
+        <g stroke={active ? "#d8f6ff" : "#aeb8be"} strokeWidth="0.5" fill="none" strokeLinecap="round">
+          <path d="M21 56 H27 M21 56 V61 M27 56 V60" />
+          <path d="M22 66 H28 M22 66 V71" />
+          <path d="M20.5 76 H26 M26 76 V81 M23 81 H28" />
+          <path d="M21 86 H27 M27 86 V90" />
         </g>
         {[
-          [22, 70, 4, 3],
-          [28, 74, 4, 4],
-          [23, 82, 5, 4],
-          [27, 90, 4, 3],
+          [21, 58, 3.4, 2.6],
+          [24.6, 62, 3, 3],
+          [20.6, 70, 4, 3.4],
+          [24.4, 73, 3, 2.6],
+          [21.4, 82, 4, 3],
+          [24.2, 87, 3, 2.4],
         ].map(([x, y, w, h], i) => (
-          <rect key={i} x={x} y={y} width={w} height={h} rx="0.6" fill="#bdf0ff" />
+          <rect key={i} x={x} y={y} width={w} height={h} rx="0.5" fill={active ? "#eafcff" : "#c4ced3"} />
         ))}
       </g>
+      {/* glass specular highlight */}
+      <path d="M17.5 54 q-1 20 1 38" stroke="#ffffff" strokeWidth="1" fill="none" opacity="0.45" strokeLinecap="round" />
 
-      {/* clear lower neck */}
-      <rect x="20" y="104" width="14" height="8" rx="2" fill={`url(#inj-metal-${uid})`} opacity="0.55" />
+      {/* chrome collar */}
+      <rect x="18" y="95" width="12" height="8" rx="2" fill={`url(#inj-metal-${uid})`} stroke="#7e878d" strokeWidth="0.4" />
 
-      {/* metallic basket nozzle */}
-      <path
-        d="M21 112 H33 L31 126 a2 2 0 0 1 -2 1.6 H25 a2 2 0 0 1 -2 -1.6 Z"
-        fill={`url(#inj-metal-${uid})`}
-        stroke="#7e878d"
-        strokeWidth="0.6"
-      />
-      {/* basket slots */}
-      <g stroke="#6b747a" strokeWidth="0.8">
-        <line x1="25" x2="24.5" y1="114" y2="125" />
-        <line x1="27" x2="27" y1="114" y2="126" />
-        <line x1="29" x2="29.5" y1="114" y2="125" />
+      {/* fluted chrome basket nozzle */}
+      <path d="M18.5 103 H29.5 L28 118 a2 2 0 0 1 -2 1.6 H22 a2 2 0 0 1 -2 -1.6 Z" fill={`url(#inj-metal-${uid})`} stroke="#7e878d" strokeWidth="0.5" />
+      <g stroke="#6b747a" strokeWidth="0.6" opacity="0.85">
+        <line x1="21" x2="20.6" y1="105" y2="118" />
+        <line x1="24" x2="24" y1="105" y2="119" />
+        <line x1="27" x2="27.4" y1="105" y2="118" />
       </g>
-      {/* pintle tip — glows on injection */}
+      {/* director tip with slots — glows on injection */}
       <rect
-        x="25.5"
-        y="126"
-        width="3"
-        height="4"
-        rx="0.8"
-        fill={active ? "#bdf0ff" : `url(#inj-metal-${uid})`}
-        style={{
-          filter: active ? "drop-shadow(0 0 4px #29c2ff)" : "none",
-          transition: "filter 40ms linear",
-        }}
+        x="21"
+        y="119"
+        width="6"
+        height="8"
+        rx="1.2"
+        fill={active ? "#d8f6ff" : `url(#inj-metal-${uid})`}
+        style={{ filter: active ? "drop-shadow(0 0 4px #7fe7ff)" : "none", transition: "filter 40ms linear" }}
       />
+      <g stroke="#6b747a" strokeWidth="0.6" opacity="0.8">
+        <line x1="23" x2="23" y1="120" y2="126" />
+        <line x1="25" x2="25" y1="120" y2="126" />
+      </g>
     </svg>
   );
 }
