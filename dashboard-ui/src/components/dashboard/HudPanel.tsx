@@ -19,22 +19,20 @@ export function HudPanel({
   children,
 }: HudPanelProps) {
   return (
-    <section className={cn("panel panel-corner rounded-sm", className)}>
+    <section className={cn("panel overflow-hidden rounded-lg", className)}>
       {title && (
-        <header className="flex items-center justify-between gap-2 border-b border-border/70 px-2.5 py-1 short:px-2.5 short:py-0.5 md:px-3 md:py-2">
-          <div className="flex items-center gap-2">
-            <span
-              className="h-3 w-[3px] rounded-full"
-              style={{ background: accent, boxShadow: `0 0 8px ${accent}` }}
-            />
-            <h2 className="font-display text-[10px] font-semibold uppercase tracking-hud text-muted-foreground md:text-[11px]">
-              {title}
-            </h2>
+        <header className="panel-titlebar relative flex items-center justify-center gap-2 px-2.5 py-1 short:py-0.5 md:py-1.5">
+          <h2 className="font-display text-[10px] font-bold uppercase tracking-hud text-white drop-shadow-[0_1px_1px_rgba(0,0,0,0.6)] md:text-[12px]">
+            {title}
+          </h2>
+          <div className="absolute right-2.5 flex items-center gap-1.5">
+            {right}
+            <span className="dot-led h-1.5 w-1.5 rounded-full" style={{ color: accent, background: accent }} />
+            <span className="dot-led h-1.5 w-1.5 rounded-full" style={{ color: "#ffb000", background: "#ffb000" }} />
           </div>
-          {right}
         </header>
       )}
-      <div className={cn("p-1.5 short:p-1.5 md:p-3", bodyClassName)}>{children}</div>
+      <div className={cn("p-1.5 short:p-1.5 md:p-2.5", bodyClassName)}>{children}</div>
     </section>
   );
 }

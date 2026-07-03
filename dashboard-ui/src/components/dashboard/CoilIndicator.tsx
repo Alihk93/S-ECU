@@ -13,10 +13,10 @@ export function CoilIndicator({ index, dwell, spark }: CoilIndicatorProps) {
   const halo = spark ? "#ffd23a" : "#ff2d3a";
 
   return (
-    <div className="panel flex flex-col items-center gap-0.5 rounded-sm px-1 py-0.5 short:gap-0.5 short:px-1 short:py-0.5 md:gap-1 md:px-1.5 md:py-2">
-      <span className="font-data text-[9px] text-muted-foreground">C{index + 1}</span>
+    <div className="panel flex h-full min-h-0 flex-col items-center gap-0.5 rounded-sm px-1 py-0.5 short:gap-0.5 short:px-1 short:py-0.5 md:gap-1 md:px-1.5 md:py-1.5">
+      <span className="font-data text-[9px] font-bold text-neon-amber">C{index + 1}</span>
 
-      <div className="relative flex h-9 w-6 items-center justify-center short:h-9 short:w-6 fit:h-28 fit:w-12">
+      <div className="relative flex min-h-0 w-full flex-1 items-center justify-center">
         <svg
           viewBox="0 0 48 132"
           preserveAspectRatio="xMidYMid meet"

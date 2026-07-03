@@ -4,29 +4,33 @@
 
 @layer base {
   :root {
-    /* Cobalt navy (VS Code "Cobalt2" family) — deep blue instrument cockpit,
-       light cool-white foreground. Panels are a slightly lifted navy so the
-       black instrument faces read as inset. */
-    --background: 205 54% 11%;
-    --foreground: 200 34% 93%;
-    --card: 206 44% 16%;
-    --card-foreground: 200 34% 93%;
-    --popover: 206 50% 8%;
-    --popover-foreground: 200 34% 93%;
-    --primary: 187 100% 50%;
-    --primary-foreground: 206 60% 6%;
-    --secondary: 205 38% 22%;
-    --secondary-foreground: 200 30% 90%;
-    --muted: 205 34% 20%;
-    --muted-foreground: 202 24% 66%;
-    --accent: 187 90% 52%;
-    --accent-foreground: 206 60% 6%;
+    /* "ECU Test Bench v4.0" skin — glossy electric-blue bench: near-black
+       carbon body, bright blue glowing panel borders, cool-white foreground. */
+    --background: 210 58% 6%;
+    --foreground: 200 40% 95%;
+    --card: 208 52% 12%;
+    --card-foreground: 200 40% 95%;
+    --popover: 210 55% 7%;
+    --popover-foreground: 200 40% 95%;
+    --primary: 200 100% 55%;
+    --primary-foreground: 210 60% 6%;
+    --secondary: 208 44% 18%;
+    --secondary-foreground: 200 35% 92%;
+    --muted: 208 40% 16%;
+    --muted-foreground: 202 30% 70%;
+    --accent: 200 100% 58%;
+    --accent-foreground: 210 60% 6%;
     --destructive: 348 100% 60%;
     --destructive-foreground: 0 0% 98%;
-    --border: 204 32% 26%;
-    --input: 204 32% 26%;
-    --ring: 187 100% 50%;
+    --border: 205 72% 42%;
+    --input: 205 60% 30%;
+    --ring: 200 100% 55%;
     --radius: 0.35rem;
+
+    /* bench skin accents */
+    --bench-blue: #1f8bff;
+    --bench-blue-bright: #35a7ff;
+    --bench-rim: rgba(53, 167, 255, 0.55);
 
     /* Neon signal palette */
     --neon-cyan: #00e7f2;
@@ -42,25 +46,25 @@
   }
 
   .dark {
-    --background: 205 54% 11%;
-    --foreground: 200 34% 93%;
-    --card: 206 44% 16%;
-    --card-foreground: 200 34% 93%;
-    --popover: 206 50% 8%;
-    --popover-foreground: 200 34% 93%;
-    --primary: 187 100% 50%;
-    --primary-foreground: 206 60% 6%;
-    --secondary: 205 38% 22%;
-    --secondary-foreground: 200 30% 90%;
-    --muted: 205 34% 20%;
-    --muted-foreground: 202 24% 66%;
-    --accent: 187 90% 52%;
-    --accent-foreground: 206 60% 6%;
+    --background: 210 58% 6%;
+    --foreground: 200 40% 95%;
+    --card: 208 52% 12%;
+    --card-foreground: 200 40% 95%;
+    --popover: 210 55% 7%;
+    --popover-foreground: 200 40% 95%;
+    --primary: 200 100% 55%;
+    --primary-foreground: 210 60% 6%;
+    --secondary: 208 44% 18%;
+    --secondary-foreground: 200 35% 92%;
+    --muted: 208 40% 16%;
+    --muted-foreground: 202 30% 70%;
+    --accent: 200 100% 58%;
+    --accent-foreground: 210 60% 6%;
     --destructive: 348 100% 60%;
     --destructive-foreground: 0 0% 98%;
-    --border: 204 32% 26%;
-    --input: 204 32% 26%;
-    --ring: 187 100% 50%;
+    --border: 205 72% 42%;
+    --input: 205 60% 30%;
+    --ring: 200 100% 55%;
   }
 }
 
@@ -95,19 +99,45 @@
     letter-spacing: 0.18em;
   }
 
-  /* Ambient cobalt backdrop: top cyan wash + corner glow, a deep base gradient
-     and a faint engineering grid. */
+  /* "ECU Test Bench" backdrop: dark carbon-fibre weave + a blue top wash,
+     inside the curved bench bezel frame. */
   .hud-backdrop {
-    background-color: hsl(var(--background));
+    background-color: #04070c;
     background-image:
-      radial-gradient(130% 90% at 50% -12%, rgba(0, 231, 242, 0.10), transparent 58%),
-      radial-gradient(110% 120% at 112% 114%, rgba(45, 139, 255, 0.10), transparent 55%),
-      radial-gradient(120% 130% at 50% 120%, rgba(4, 12, 20, 0.55), transparent 60%),
-      linear-gradient(180deg, hsl(205 52% 13%), hsl(206 58% 8%)),
-      linear-gradient(var(--grid-line) 1px, transparent 1px),
-      linear-gradient(90deg, var(--grid-line) 1px, transparent 1px);
-    background-size:
-      100% 100%, 100% 100%, 100% 100%, 100% 100%, 34px 34px, 34px 34px;
+      radial-gradient(130% 80% at 50% -10%, rgba(31, 139, 255, 0.14), transparent 55%),
+      radial-gradient(120% 120% at 50% 120%, rgba(2, 6, 12, 0.6), transparent 60%),
+      repeating-linear-gradient(45deg, rgba(255, 255, 255, 0.020) 0 2px, transparent 2px 4px),
+      repeating-linear-gradient(-45deg, rgba(255, 255, 255, 0.020) 0 2px, transparent 2px 4px),
+      linear-gradient(180deg, #0a1420, #05090f);
+    background-size: 100% 100%, 100% 100%, 6px 6px, 6px 6px, 100% 100%;
+  }
+
+  /* carbon-fibre weave utility (for panel interiors / banks) */
+  .carbon {
+    background-color: #060b12;
+    background-image:
+      repeating-linear-gradient(45deg, rgba(255, 255, 255, 0.03) 0 2px, transparent 2px 4px),
+      repeating-linear-gradient(-45deg, rgba(255, 255, 255, 0.03) 0 2px, transparent 2px 4px);
+    background-size: 6px 6px, 6px 6px;
+  }
+
+  /* curved glossy blue bench bezel around the whole app */
+  .bench-frame {
+    border-radius: 1.4rem;
+    padding: 6px;
+    background:
+      linear-gradient(180deg, #2f8fe6, #0b2f63 45%, #071b3a 100%);
+    box-shadow:
+      0 0 0 1px rgba(53, 167, 255, 0.5),
+      0 0 28px -2px rgba(31, 139, 255, 0.55),
+      inset 0 2px 3px rgba(180, 225, 255, 0.35),
+      inset 0 -3px 6px rgba(0, 0, 0, 0.6);
+  }
+
+  /* brushed-metal bezel (gauge rings, lamps) */
+  .metal-bezel {
+    background:
+      conic-gradient(from 210deg, #3a4650, #aeb9c2, #5a6670, #d7dee4, #444e57, #9aa5ad, #2b333b);
   }
 
   .scanlines::after {
@@ -128,15 +158,28 @@
 
   .panel {
     position: relative;
-    border: 1px solid hsl(var(--border));
-    border-radius: 0.5rem;
+    border: 1px solid var(--bench-blue);
+    border-radius: 0.6rem;
     background:
-      linear-gradient(180deg, rgba(120, 190, 230, 0.07), rgba(0, 0, 0, 0.22)),
-      hsl(var(--card));
+      linear-gradient(180deg, rgba(40, 120, 200, 0.14), rgba(2, 8, 16, 0.5) 30%),
+      #081422;
     box-shadow:
-      inset 0 1px 0 rgba(150, 205, 240, 0.10),
-      inset 0 0 0 1px rgba(0, 0, 0, 0.20),
-      0 12px 30px -16px rgba(0, 0, 0, 0.85);
+      inset 0 1px 0 rgba(120, 190, 255, 0.25),
+      inset 0 0 22px -8px rgba(31, 139, 255, 0.5),
+      0 0 0 1px rgba(0, 0, 0, 0.5),
+      0 0 16px -4px var(--bench-rim),
+      0 14px 30px -18px rgba(0, 0, 0, 0.9);
+  }
+  /* blue gradient title bar for panel headers (mockup look) */
+  .panel-titlebar {
+    background: linear-gradient(180deg, #1d64b6, #10315f);
+    box-shadow: inset 0 1px 0 rgba(160, 210, 255, 0.4), inset 0 -2px 4px rgba(0, 0, 0, 0.4);
+    border-bottom: 1px solid rgba(53, 167, 255, 0.5);
+  }
+  /* little status dot-LED used on titlebars/cells */
+  .dot-led {
+    box-shadow: 0 0 5px currentColor, 0 0 9px -1px currentColor,
+      inset 0 0 2px rgba(255, 255, 255, 0.6);
   }
   .panel-corner::before,
   .panel-corner::after {

@@ -2,18 +2,17 @@ import { useMemo } from "react";
 import { RANGES } from "@/lib/ecu";
 import { clamp } from "@/lib/sim";
 
-// Full-circle automotive tachometer redrawn after the reference gauge photo:
-// a dished black face, a segmented neon outer ring (blue grading to red across
-// the redline), white numerals and a bold red sweep needle with counterweight.
-// Scale / values are unchanged (0–8 ×1000, 6500 redline). Realism is pure SVG
-// (gradients / filters), no raster — constraint #4.
+// Glossy speedometer-style RPM gauge after the "ECU Test Bench v4.0" mockup:
+// brushed-silver bezel, black face, cyan tick ring + numerals, an orange sweep
+// needle and "RPM x1000" in the centre. All-SVG (no raster). Scale/values
+// unchanged: 0–8 ×1000, 6500 redline; RBM + LOAD readouts kept below.
 
 const START = 135; // deg — lower-left (0)
-const SWEEP = 270; // deg — clockwise over the top to lower-right (max)
+const SWEEP = 270; // deg — clockwise to lower-right (max)
 const CX = 120;
 const CY = 120;
-const R = 90; // tick baseline radius
-const MAX_K = 8; // full-scale ×1000
+const R = 92; // tick baseline radius
+const MAX_K = 8;
 
 function polar(angleDeg: number, r: number) {
   const a = (angleDeg * Math.PI) / 180;
@@ -33,53 +32,30 @@ export function Tachometer({ rpm, load }: TachometerProps) {
   const redlineT = RANGES.rpm.redline / maxRpm;
   const loadPct = Math.round(clamp(load, 0, 1) * 100);
 
-  // Needle geometry — a diamond spar (tip + counterweight) computed directly to
-  // avoid the CSS transform-origin ambiguity on <g>.
-  const tip = polar(angle, R - 2);
-  const tail = polar(angle + 180, 26);
-  const hw = 4.6; // half-width at the hub
-  const perpL = { x: Math.cos((angle + 90) * Math.PI / 180), y: Math.sin((angle + 90) * Math.PI / 180) };
-  const pL = { x: CX + hw * perpL.x, y: CY + hw * perpL.y };
-  const pR = { x: CX - hw * perpL.x, y: CY - hw * perpL.y };
+  const tip = polar(angle, R - 6);
+  const tail = polar(angle + 180, 24);
+  const hw = 4.6;
+  const perp = { x: Math.cos(((angle + 90) * Math.PI) / 180), y: Math.sin(((angle + 90) * Math.PI) / 180) };
+  const pL = { x: CX + hw * perp.x, y: CY + hw * perp.y };
+  const pR = { x: CX - hw * perp.x, y: CY - hw * perp.y };
   const needle = `${pL.x},${pL.y} ${tip.x},${tip.y} ${pR.x},${pR.y} ${tail.x},${tail.y}`;
 
-  // segmented neon outer ring — blue below the redline, red at/above it
-  const segs = useMemo(() => {
-    const arr: { x1: number; y1: number; x2: number; y2: number; color: string }[] = [];
-    const N = 64;
-    for (let i = 0; i <= N; i++) {
-      const f = i / N;
-      const ang = START + f * SWEEP;
-      const major = i % 8 === 0;
-      const o = polar(ang, 106);
-      const inn = polar(ang, major ? 92 : 96);
-      const red = f >= redlineT;
-      // subtle cyan→blue graduation across the healthy range
-      const color = red ? "#ff2d3a" : f < 0.45 ? "#22c3f2" : "#2d8bff";
-      arr.push({ x1: o.x, y1: o.y, x2: inn.x, y2: inn.y, color });
-    }
-    return arr;
-  }, [redlineT]);
-
-  // ticks + numerals (0..8)
   const ticks = useMemo(() => {
     const arr: {
       x1: number; y1: number; x2: number; y2: number;
       major: boolean; red: boolean; lx?: number; ly?: number; label?: string;
     }[] = [];
-    const N = MAX_K * 2; // half-unit minor ticks
+    const N = MAX_K * 2;
     for (let i = 0; i <= N; i++) {
       const f = i / N;
       const ang = START + f * SWEEP;
       const major = i % 2 === 0;
       const red = f >= redlineT;
       const outer = polar(ang, R);
-      const inner = polar(ang, major ? R - 11 : R - 6);
-      const tk: (typeof arr)[number] = {
-        x1: outer.x, y1: outer.y, x2: inner.x, y2: inner.y, major, red,
-      };
+      const inner = polar(ang, major ? R - 13 : R - 7);
+      const tk: (typeof arr)[number] = { x1: outer.x, y1: outer.y, x2: inner.x, y2: inner.y, major, red };
       if (major) {
-        const lp = polar(ang, R - 24);
+        const lp = polar(ang, R - 26);
         tk.lx = lp.x;
         tk.ly = lp.y;
         tk.label = String(i / 2);
@@ -91,104 +67,86 @@ export function Tachometer({ rpm, load }: TachometerProps) {
 
   return (
     <div className="flex h-full min-h-0 w-full flex-col items-center justify-center overflow-hidden">
-      <svg
-        viewBox="0 0 240 240"
-        preserveAspectRatio="xMidYMid meet"
-        className="h-full max-h-[340px] w-full min-h-0"
-      >
+      <svg viewBox="0 0 240 240" preserveAspectRatio="xMidYMid meet" className="h-full max-h-[360px] w-full min-h-0">
         <defs>
-          <radialGradient id="tach-face" cx="50%" cy="42%" r="72%">
-            <stop offset="0%" stopColor="#12191f" />
-            <stop offset="62%" stopColor="#070c10" />
-            <stop offset="100%" stopColor="#010406" />
+          <radialGradient id="spd-face" cx="50%" cy="42%" r="72%">
+            <stop offset="0%" stopColor="#0d3247" />
+            <stop offset="52%" stopColor="#061826" />
+            <stop offset="100%" stopColor="#010a12" />
           </radialGradient>
-          <radialGradient id="tach-bezel" cx="50%" cy="34%" r="72%">
-            <stop offset="0%" stopColor="#3a444c" />
-            <stop offset="45%" stopColor="#1a2127" />
-            <stop offset="100%" stopColor="#05080b" />
-          </radialGradient>
-          <linearGradient id="tach-needle" x1="0" y1="0" x2="1" y2="1">
-            <stop offset="0%" stopColor="#ff6a6a" />
-            <stop offset="55%" stopColor="#ff2a2a" />
-            <stop offset="100%" stopColor="#b3151b" />
+          <linearGradient id="spd-bezel" x1="0" y1="0" x2="0" y2="1">
+            <stop offset="0%" stopColor="#dfe6ec" />
+            <stop offset="18%" stopColor="#9aa6b1" />
+            <stop offset="50%" stopColor="#59636d" />
+            <stop offset="82%" stopColor="#aab4bd" />
+            <stop offset="100%" stopColor="#2f373f" />
           </linearGradient>
-          <filter id="tach-glow" x="-40%" y="-40%" width="180%" height="180%">
+          <linearGradient id="spd-bezel2" x1="0" y1="0" x2="0" y2="1">
+            <stop offset="0%" stopColor="#2c343c" />
+            <stop offset="50%" stopColor="#0b1016" />
+            <stop offset="100%" stopColor="#3a444d" />
+          </linearGradient>
+          <linearGradient id="spd-needle" x1="0" y1="0" x2="1" y2="1">
+            <stop offset="0%" stopColor="#ffd07a" />
+            <stop offset="55%" stopColor="#ff9d00" />
+            <stop offset="100%" stopColor="#d15e00" />
+          </linearGradient>
+          <filter id="spd-glow" x="-40%" y="-40%" width="180%" height="180%">
             <feGaussianBlur stdDeviation="2.2" result="b" />
-            <feMerge>
-              <feMergeNode in="b" />
-              <feMergeNode in="SourceGraphic" />
-            </feMerge>
+            <feMerge><feMergeNode in="b" /><feMergeNode in="SourceGraphic" /></feMerge>
           </filter>
-          <filter id="tach-ringglow" x="-30%" y="-30%" width="160%" height="160%">
-            <feGaussianBlur stdDeviation="1.4" />
+          <filter id="spd-ring" x="-30%" y="-30%" width="160%" height="160%">
+            <feGaussianBlur stdDeviation="1.2" />
           </filter>
         </defs>
 
-        {/* outer neon halo + metallic bezel + dished black face */}
-        <circle cx={CX} cy={CY} r={116} fill="none" stroke="#1c6f9e" strokeWidth={2} opacity={0.5} filter="url(#tach-ringglow)" />
-        <circle cx={CX} cy={CY} r={113} fill="url(#tach-bezel)" stroke="#04070a" strokeWidth={2} />
-        <circle cx={CX} cy={CY} r={104} fill="url(#tach-face)" stroke="#0c1319" strokeWidth={1} />
+        {/* brushed-silver bezel rings + dished black face */}
+        <circle cx={CX} cy={CY} r={118} fill="url(#spd-bezel)" />
+        <circle cx={CX} cy={CY} r={109} fill="url(#spd-bezel2)" />
+        <circle cx={CX} cy={CY} r={104} fill="url(#spd-face)" stroke="#0a1a26" strokeWidth={1} />
 
-        {/* soft blurred copy of the segmented ring → neon bloom */}
-        <g filter="url(#tach-ringglow)" opacity={0.7}>
-          {segs.map((s, i) => (
-            <line key={i} x1={s.x1} y1={s.y1} x2={s.x2} y2={s.y2} stroke={s.color} strokeWidth={3.4} strokeLinecap="round" />
+        {/* cyan minor tick ring (bloom + crisp) */}
+        <g filter="url(#spd-ring)" opacity={0.6}>
+          {ticks.map((tk, i) => (
+            <line key={i} x1={tk.x1} y1={tk.y1} x2={tk.x2} y2={tk.y2} stroke={tk.red ? "#ff7a18" : "#26c9e8"} strokeWidth={tk.major ? 3 : 1.6} strokeLinecap="round" />
           ))}
         </g>
-        {/* crisp segmented ring on top */}
-        {segs.map((s, i) => (
-          <line key={i} x1={s.x1} y1={s.y1} x2={s.x2} y2={s.y2} stroke={s.color} strokeWidth={2.6} strokeLinecap="round" />
-        ))}
-
-        {/* ticks + numerals */}
         {ticks.map((tk, i) => (
           <g key={i}>
-            <line
-              x1={tk.x1} y1={tk.y1} x2={tk.x2} y2={tk.y2}
-              stroke={tk.red ? "#ff5260" : tk.major ? "#eef6f9" : "#8fa3ad"}
-              strokeWidth={tk.major ? 2 : 1}
-            />
+            <line x1={tk.x1} y1={tk.y1} x2={tk.x2} y2={tk.y2} stroke={tk.red ? "#ff9d3c" : tk.major ? "#7fe9ff" : "#3aa6c4"} strokeWidth={tk.major ? 2 : 1} />
             {tk.label && (
-              <text
-                x={tk.lx} y={tk.ly}
-                fill={tk.red ? "#ff5260" : "#f2f8fb"}
-                fontSize="17" fontWeight="700"
-                textAnchor="middle" dominantBaseline="central"
-                fontFamily="'JetBrains Mono', monospace"
-              >
+              <text x={tk.lx} y={tk.ly} fill={tk.red ? "#ff9d3c" : "#69e0ff"} fontSize="16" fontWeight="700" textAnchor="middle" dominantBaseline="central" fontFamily="'JetBrains Mono', monospace">
                 {tk.label}
               </text>
             )}
           </g>
         ))}
 
-        {/* "1/min x 1000" caption inside the lower face */}
-        <text x={CX} y={CY + 40} fill="#9fb2bb" fontSize="10" textAnchor="middle" letterSpacing="2" fontFamily="'Chakra Petch', sans-serif">
-          1/min
+        {/* centre labels */}
+        <text x={CX} y={CY + 38} fill={over ? "#ff2d55" : "#39d6f2"} fontSize="20" fontWeight="800" textAnchor="middle" fontFamily="'Chakra Petch', sans-serif" letterSpacing="1" style={{ filter: "url(#spd-glow)" }}>
+          RPM
         </text>
-        <text x={CX} y={CY + 54} fill="#c7d6de" fontSize="12" fontWeight="700" textAnchor="middle" letterSpacing="1.5" fontFamily="'Chakra Petch', sans-serif">
-          x 1000
+        <text x={CX} y={CY + 54} fill="#7fd9ea" fontSize="11" textAnchor="middle" fontFamily="'Chakra Petch', sans-serif" letterSpacing="2">
+          x1000
+        </text>
+        <text x={CX} y={CY + 78} fill="#5aa9c2" fontSize="8.5" textAnchor="middle" fontFamily="'Chakra Petch', sans-serif" letterSpacing="1.5">
+          AL-AYED
         </text>
 
         {/* glass reflection */}
-        <ellipse cx={CX} cy={CY - 44} rx={72} ry={40} fill="#cfeaff" opacity={0.05} />
+        <ellipse cx={CX} cy={CY - 44} rx={70} ry={38} fill="#bfe9ff" opacity={0.05} />
 
-        {/* needle — diamond spar with counterweight, glowing */}
-        <polygon points={needle} fill="url(#tach-needle)" stroke="#7c0f14" strokeWidth={0.6} filter="url(#tach-glow)" />
-        {/* hub */}
-        <circle cx={CX} cy={CY} r={13} fill="#0b1116" stroke="#3a444c" strokeWidth={1.4} />
-        <circle cx={CX} cy={CY} r={9} fill="none" stroke="#ff2a2a" strokeWidth={2} opacity={0.9} />
-        <circle cx={CX} cy={CY} r={3.4} fill="#ff5a5a" />
+        {/* orange needle + hub */}
+        <polygon points={needle} fill="url(#spd-needle)" stroke="#8a3d00" strokeWidth={0.6} filter="url(#spd-glow)" />
+        <circle cx={CX} cy={CY} r={12} fill="url(#spd-bezel2)" stroke="#8a95a0" strokeWidth={1.4} />
+        <circle cx={CX} cy={CY} r={5} fill="#ff9d00" />
       </svg>
 
-      <div className="-mt-4 flex items-end gap-6 short:-mt-3 md:-mt-5">
+      <div className="-mt-3 flex items-end gap-6 short:-mt-2 md:-mt-4">
         <div className="flex flex-col items-center">
           <div
-            className="font-data font-bold leading-none text-[34px] short:text-[28px] md:text-[44px]"
-            style={{
-              color: over ? "#ff2d55" : "#e8f2f8",
-              textShadow: over ? "0 0 18px #ff2d55" : "0 0 14px rgba(120,200,235,0.45)",
-            }}
+            className="font-data font-bold leading-none text-[30px] short:text-[24px] md:text-[38px]"
+            style={{ color: over ? "#ff2d55" : "#e8f2f8", textShadow: over ? "0 0 18px #ff2d55" : "0 0 14px rgba(120,200,235,0.45)" }}
           >
             {Math.round(rpm).toString().padStart(4, "0")}
           </div>
@@ -197,13 +155,11 @@ export function Tachometer({ rpm, load }: TachometerProps) {
           </div>
         </div>
         <div className="flex flex-col items-center">
-          <div className="font-data text-[20px] font-bold leading-none md:text-[24px]" style={{ color: "#4fc9e8", textShadow: "0 0 12px rgba(79,201,232,0.5)" }}>
+          <div className="font-data text-[18px] font-bold leading-none md:text-[22px]" style={{ color: "#ff9d3c", textShadow: "0 0 12px rgba(255,157,0,0.5)" }}>
             {loadPct}
-            <span className="text-[12px]">%</span>
+            <span className="text-[11px]">%</span>
           </div>
-          <div className="mt-0.5 font-display text-[10px] uppercase tracking-hud text-muted-foreground">
-            LOAD
-          </div>
+          <div className="mt-0.5 font-display text-[10px] uppercase tracking-hud text-muted-foreground">LOAD</div>
         </div>
       </div>
     </div>

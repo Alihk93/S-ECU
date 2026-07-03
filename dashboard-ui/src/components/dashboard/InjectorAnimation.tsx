@@ -362,10 +362,10 @@ export function InjectorAnimation({ index, value, prefix = "I" }: InjectorProps)
   const gdi = prefix === "G";
 
   return (
-    <div className="panel flex flex-col items-center gap-0.5 rounded-sm px-1 py-0.5 short:gap-0.5 short:px-1 short:py-0.5 md:gap-1 md:px-1.5 md:py-2">
-      <span className="font-data text-[9px] text-muted-foreground">{prefix}{index + 1}</span>
+    <div className="panel flex h-full min-h-0 flex-col items-center gap-0.5 rounded-sm px-1 py-0.5 short:gap-0.5 short:px-1 short:py-0.5 md:gap-1 md:px-1.5 md:py-1.5">
+      <span className="font-data text-[9px] font-bold" style={{ color: prefix === "G" ? "#ff5a6a" : "#4aa8ff" }}>{prefix}{index + 1}</span>
 
-      <div className="relative flex h-9 w-6 items-center justify-center short:h-9 short:w-6 fit:h-28 fit:w-12">
+      <div className="relative flex min-h-0 w-full flex-1 items-center justify-center">
         {gdi ? (
           <GdiInjectorSvg uid={uid} value={value} active={active} />
         ) : (

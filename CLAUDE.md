@@ -296,6 +296,28 @@ add `cl`/`in` 8-bit masks for real per-channel coil/injector sensing.
     scopes, ECU LED panels) were already black/photoreal, so they carried over unchanged.
   - Realism method is photorealistic SVG (constraint #4 upheld: no raster). Verified in
     headless Chromium at 1440×900 — cobalt theme renders clean/elegant, all modules readable.
+- **UPDATED (2026-07-03, "ECU Test Bench v4.0" redesign):** full layout + skin redesign to match
+  a reference mockup — **frontend-only, all-SVG (no raster, constraint #4); data contract + values
+  untouched**, AL-AYED branding kept. Rebuilt/re-embedded (`index.html.gz` ~333 KB) + regenerated
+  demo/presentation. NOT yet flashed this pass.
+  - **Skin** (`index.css`): glossy electric-blue "bench" theme — near-black carbon-fibre backdrop
+    (CSS repeating gradients), curved `.bench-frame` bezel, glossy blue `.panel` with bright rim
+    glow, blue `.panel-titlebar` (centered title + dot-LEDs). New tokens + `.carbon`/`.metal-bezel`.
+  - **Layout** (`App.tsx`): top bar → middle band (left OSCILLOSCOPE&CAN column · right SENSOR
+    GAUGES&RPM + INDICATORS) → bottom OUTPUT DRIVER BANKS (COIL/INJ/GDI ×8). Kept height-aware
+    no-scroll approach.
+  - **Top bar** (`TopBar.tsx`): AL-AYED · ECU Test Bench v4.0 title; VOLTAGE=`ecuV` / CURRENT=`cur`
+    / COUNTER=`amp` seven-seg readouts (reuse `SevenSegDisplay`); round BAT/SWON/MRC± lamps
+    (absorbs the old `PowerDisplay`).
+  - **Gauges**: `Tachometer.tsx` → glossy silver-bezel **speedometer** (cyan ticks, orange needle,
+    "RPM x1000"); `Gauge.tsx` → compact **half-circle** sensor dials (per-signal colour arc, red
+    past warn). These SUPERSEDE the earlier full-circle neon gauges (session commits f01b457/6e746be).
+  - **Scopes**: new `MainAnalogWave.tsx` (cyan analog trace); `WaveformScope` CKP/CMP recoloured
+    **amber**; `CanScope` stays green.
+  - **New**: `StatusGrid.tsx` (ST/ETC/FPC/FAN1/FAN2/IMO+/IMO−/IAC buttons from status bits),
+    `DriverBank.tsx` (accent-framed 4×2 part banks reusing `CoilIndicator`/`InjectorAnimation`).
+  - Reference part photos (user-supplied) are treated as **references redrawn to SVG** — nothing
+    raster embedded. `StatusCluster.tsx` + `PowerDisplay.tsx` are now dormant (unused).
 - **NOT YET TESTED:** on-device visual confirmation of the new layout; multi-client broadcast,
   gauge latency under load, pot→load mapping, every status bit — bench test pending.
 
