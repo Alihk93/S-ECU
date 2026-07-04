@@ -4,10 +4,10 @@ interface InjectorProps {
   prefix?: string; // channel label prefix ("I" port, "G" GDI)
 }
 
-// Port injector ("I" bank) — styled after the real Bosch part: silver fuel
-// inlet, black ribbed cap, a red upper O-ring, an angled black electrical
-// connector, a black BOSCH-marked body, a cream mid-collar, a pink lower O-ring
-// and a metallic nozzle whose pintle tip glows when energized.
+// Port injector ("I" bank) — redrawn after the reference Bosch EV14 photo:
+// gunmetal ribbed inlet (EV14 mark), bright red upper O-ring, angled black
+// keyed connector, matte black BOSCH body, chrome collar, a pink lower O-ring
+// and a chrome pintle nozzle whose tip glows when energized.
 function PortInjectorSvg({ uid, value, active }: { uid: string; value: number; active: boolean }) {
   return (
     <svg
@@ -34,16 +34,10 @@ function PortInjectorSvg({ uid, value, active }: { uid: string; value: number; a
           <stop offset="70%" stopColor="#dde3e6" />
           <stop offset="100%" stopColor="#8d979d" />
         </linearGradient>
-        {/* cream mid collar */}
-        <linearGradient id={`inj-body-${uid}`} x1="0" y1="0" x2="1" y2="0">
-          <stop offset="0%" stopColor="#cabfb2" />
-          <stop offset="50%" stopColor="#f1ebe2" />
-          <stop offset="100%" stopColor="#b3a799" />
-        </linearGradient>
         {/* upper red O-ring */}
         <linearGradient id={`inj-ring-${uid}`} x1="0" y1="0" x2="1" y2="0">
           <stop offset="0%" stopColor="#ff6a6a" />
-          <stop offset="45%" stopColor="#d22f2f" />
+          <stop offset="45%" stopColor="#e21f1f" />
           <stop offset="100%" stopColor="#8e1414" />
         </linearGradient>
         {/* lower pink O-ring */}
@@ -54,74 +48,69 @@ function PortInjectorSvg({ uid, value, active }: { uid: string; value: number; a
         </linearGradient>
       </defs>
 
-      {/* top fuel inlet pipe (silver) */}
-      <rect x="20.5" y="2" width="7" height="8" rx="2" fill={`url(#inj-metal-${uid})`} />
-      {/* dark inlet cap ring */}
-      <rect x="18" y="8.5" width="12" height="3.5" rx="1.7" fill="#15181b" />
-
-      {/* black ribbed top cap */}
-      <rect x="16" y="11" width="16" height="11" rx="3" fill={`url(#inj-black-${uid})`} stroke="#0a0c0e" strokeWidth="0.5" />
-      <g stroke="#4a5056" strokeWidth="0.5" opacity="0.5">
-        <line x1="17" x2="31" y1="14" y2="14" />
-        <line x1="17" x2="31" y1="16.5" y2="16.5" />
-        <line x1="17" x2="31" y1="19" y2="19" />
+      {/* gunmetal ribbed inlet cap (rounded top) */}
+      <rect x="18.5" y="2" width="11" height="14" rx="4.5" fill={`url(#inj-black-${uid})`} stroke="#0a0c0e" strokeWidth="0.5" />
+      <g stroke="#4a5056" strokeWidth="0.6" opacity="0.55">
+        <line x1="19.5" x2="28.5" y1="6" y2="6" />
+        <line x1="19.5" x2="28.5" y1="9" y2="9" />
+        <line x1="19.5" x2="28.5" y1="12" y2="12" />
       </g>
+      <ellipse cx="24" cy="3.6" rx="4" ry="1.4" fill="#7c848a" opacity="0.5" />
 
-      {/* upper red O-ring */}
-      <rect x="15.5" y="20" width="17" height="4" rx="2" fill={`url(#inj-ring-${uid})`} />
-      <rect x="15.5" y="20.4" width="17" height="1.2" rx="0.6" fill="#ff9a9a" opacity="0.8" />
+      {/* top black shoulder + EV14 mark */}
+      <rect x="16.5" y="14" width="15" height="7" rx="2.5" fill={`url(#inj-black-${uid})`} stroke="#0a0c0e" strokeWidth="0.5" />
+      <text x="24" y="18.6" fill="#9aa3a9" fontSize="4" fontWeight="700" textAnchor="middle" letterSpacing="0.3" opacity="0.8" fontFamily="'Chakra Petch', sans-serif">EV14</text>
 
-      {/* angled electrical connector — points up to 11 o'clock */}
-      <g transform="rotate(-62 18 36)">
-        <rect x="3" y="27" width="16" height="15" rx="3" fill={`url(#inj-black-${uid})`} stroke="#0a0c0e" strokeWidth="0.6" />
-        <rect x="6" y="30.5" width="7" height="8" rx="1.5" fill="#0c0e10" />
+      {/* bright red upper O-ring */}
+      <rect x="15.5" y="20.5" width="17" height="4.4" rx="2.2" fill={`url(#inj-ring-${uid})`} />
+      <rect x="15.5" y="20.9" width="17" height="1.3" rx="0.6" fill="#ff9a9a" opacity="0.85" />
+
+      {/* angled black keyed connector (upper-left) */}
+      <g transform="rotate(-45 17 36)">
+        <rect x="1" y="27" width="17" height="16" rx="3" fill={`url(#inj-black-${uid})`} stroke="#0a0c0e" strokeWidth="0.6" />
+        <rect x="4.5" y="30.5" width="8" height="8" rx="1.5" fill="#0c0e10" />
+        <rect x="6" y="32" width="5" height="5" rx="0.8" fill="#1b2024" />
       </g>
 
       {/* main black BOSCH body */}
-      <rect x="15" y="22.5" width="18" height="62" rx="4" fill={`url(#inj-black-${uid})`} stroke="#0a0c0e" strokeWidth="0.7" />
-      {/* embossed marking */}
+      <rect x="15" y="24" width="18" height="66" rx="4.5" fill={`url(#inj-black-${uid})`} stroke="#0a0c0e" strokeWidth="0.7" />
       <text
-        x="24" y="45"
-        fill="#9aa3a9" fontSize="4.6" fontWeight="700"
-        textAnchor="middle" letterSpacing="0.3" opacity="0.75"
+        x="24" y="74"
+        fill="#9aa3a9" fontSize="4.4" fontWeight="700"
+        textAnchor="middle" letterSpacing="0.4" opacity="0.7"
         fontFamily="'Chakra Petch', sans-serif"
       >
         BOSCH
       </text>
-      {/* lower body ribs */}
-      <g stroke="#3c4248" strokeWidth="0.5" opacity="0.55">
-        <line x1="18" x2="30" y1="52" y2="52" />
-        <line x1="18" x2="30" y1="70" y2="70" />
-        <line x1="18" x2="30" y1="73" y2="73" />
-        <line x1="18" x2="30" y1="76" y2="76" />
-        <line x1="18" x2="30" y1="79" y2="79" />
-      </g>
 
-      {/* cream mid collar */}
-      <rect x="17" y="84" width="14" height="11" rx="2" fill={`url(#inj-body-${uid})`} stroke="#9aa4aa" strokeWidth="0.5" />
+      {/* black lower step */}
+      <rect x="16.5" y="88" width="15" height="7" rx="2" fill={`url(#inj-black-${uid})`} stroke="#0a0c0e" strokeWidth="0.5" />
 
-      {/* lower pink O-ring */}
-      <rect x="16.5" y="93" width="15" height="4" rx="2" fill={`url(#inj-pink-${uid})`} />
-      <rect x="16.5" y="93.4" width="15" height="1.1" rx="0.5" fill="#ffb3c2" opacity="0.8" />
+      {/* chrome collar */}
+      <rect x="18" y="95" width="12" height="8" rx="1.5" fill={`url(#inj-metal-${uid})`} stroke="#7e878d" strokeWidth="0.4" />
 
-      {/* metallic nozzle (tapering) */}
+      {/* pink lower O-ring */}
+      <rect x="16.5" y="102.5" width="15" height="4.4" rx="2.2" fill={`url(#inj-pink-${uid})`} />
+      <rect x="16.5" y="102.9" width="15" height="1.2" rx="0.6" fill="#ffb3c2" opacity="0.85" />
+
+      {/* chrome pintle nozzle (tapering) */}
       <path
-        d="M19 96 H29 L27.5 114 a1.6 1.6 0 0 1 -1.6 1.4 H22.1 a1.6 1.6 0 0 1 -1.6 -1.4 Z"
+        d="M20 106 H28 L26.8 118 a1.6 1.6 0 0 1 -1.6 1.4 H22.8 a1.6 1.6 0 0 1 -1.6 -1.4 Z"
         fill={`url(#inj-metal-${uid})`}
         stroke="#7e878d"
         strokeWidth="0.5"
       />
       <g stroke="#6b747a" strokeWidth="0.6" opacity="0.8">
-        <line x1="22" x2="21.6" y1="98" y2="113" />
-        <line x1="24" x2="24" y1="98" y2="114" />
-        <line x1="26" x2="26.4" y1="98" y2="113" />
+        <line x1="22.5" x2="22.2" y1="108" y2="118" />
+        <line x1="24" x2="24" y1="108" y2="119" />
+        <line x1="25.5" x2="25.8" y1="108" y2="118" />
       </g>
       {/* pintle tip — glows on injection */}
       <rect
-        x="22"
-        y="114.5"
-        width="4"
-        height="5"
+        x="22.4"
+        y="119"
+        width="3.2"
+        height="4.6"
         rx="1"
         fill={active ? "#bdf0ff" : `url(#inj-metal-${uid})`}
         style={{
