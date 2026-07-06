@@ -318,6 +318,13 @@ add `cl`/`in` 8-bit masks for real per-channel coil/injector sensing.
     `DriverBank.tsx` (accent-framed 4×2 part banks reusing `CoilIndicator`/`InjectorAnimation`).
   - Reference part photos (user-supplied) are treated as **references redrawn to SVG** — nothing
     raster embedded. `StatusCluster.tsx` + `PowerDisplay.tsx` are now dormant (unused).
+- **UPDATED (2026-07-06, trims + brand logo):** frontend-only. (1) Removed the Main Analog Wave
+  scope block, the top-bar COUNTER seven-seg, and the LOAD % readout under the RPM gauge (`amp`
+  and `load` still stream; just not displayed). (2) Replaced the hand-drawn SVG `SparkMark` in the
+  top bar with the **real AL-AYED logo** — `dashboard-ui/src/assets/al-ayed-logo.jpg` (compressed
+  520×146 from repo-root `AL-AYED_Logo.png`), vite-inlined as base64. **This is the one deliberate
+  raster exception to constraint #4** (a small brand badge, ~20 KB base64; bundle gzip 333→349 KB,
+  still fits the 3 MB partition). Data contract untouched.
 - **NOT YET TESTED:** on-device visual confirmation of the new layout; multi-client broadcast,
   gauge latency under load, pot→load mapping, every status bit — bench test pending.
 

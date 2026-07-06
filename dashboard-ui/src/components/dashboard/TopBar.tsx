@@ -1,6 +1,7 @@
 import { useEffect, useRef, useState } from "react";
 import type { LinkStatus } from "@/hooks/useEcuLink";
 import type { StatusKey } from "@/lib/ecu";
+import logoUrl from "@/assets/al-ayed-logo.jpg";
 import { SevenSegDisplay } from "./SevenSegDisplay";
 
 interface TopBarProps {
@@ -50,17 +51,14 @@ export function TopBar({ fps, linkStatus, ecuV, cur, status }: TopBarProps) {
 
   return (
     <header className="panel flex items-center justify-between gap-3 rounded-lg px-3 py-1.5 short:py-1 md:px-4">
-      {/* title */}
-      <div className="flex items-center gap-2 leading-tight">
-        <SparkMark />
-        <div>
-          <div className="font-display text-sm font-bold tracking-hud text-white short:text-xs md:text-base">
-            AL-AYED
-          </div>
-          <div className="font-data text-[8px] uppercase tracking-widest text-neon-cyan md:text-[9px]">
-            ECU Test Bench v4.0
-          </div>
-        </div>
+      {/* brand logo (AL-AYED · ECU Tester) */}
+      <div className="flex items-center">
+        <img
+          src={logoUrl}
+          alt="AL-AYED · ECU Tester"
+          className="h-9 w-auto rounded-sm short:h-7 md:h-12"
+          style={{ boxShadow: "0 0 10px -3px rgba(0,231,242,0.5)" }}
+        />
       </div>
 
       {/* three seven-seg readouts */}
@@ -170,21 +168,3 @@ function RelayGlyph() {
   );
 }
 
-function SparkMark() {
-  return (
-    <svg viewBox="0 0 120 40" className="h-6 w-[52px] shrink-0 md:h-7" aria-hidden="true">
-      <defs>
-        <filter id="logo-spark" x="-50%" y="-50%" width="200%" height="200%">
-          <feGaussianBlur stdDeviation="1.6" result="b" />
-          <feMerge><feMergeNode in="b" /><feMergeNode in="SourceGraphic" /></feMerge>
-        </filter>
-      </defs>
-      <path d="M2,24 H40 V38 H50 V6 C54,6 56,24 66,24 H118" fill="none" stroke="#3aa7ff" strokeWidth="2.4" strokeLinecap="round" strokeLinejoin="round" />
-      <path d="M40,38 H50 V6 C54,6 56,24 66,24" fill="none" stroke="#ff2d55" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" filter="url(#logo-spark)" />
-      <path d="M2,18 V30 M118,18 V30" stroke="#3aa7ff" strokeWidth="2" strokeLinecap="round" />
-      <circle cx="26" cy="24" r="2.4" fill="#ff2d55" filter="url(#logo-spark)" />
-      <circle cx="90" cy="24" r="2.4" fill="#ff2d55" filter="url(#logo-spark)" />
-      <circle cx="110" cy="24" r="2.4" fill="#ff2d55" filter="url(#logo-spark)" />
-    </svg>
-  );
-}
