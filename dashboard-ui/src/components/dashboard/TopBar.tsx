@@ -51,13 +51,12 @@ export function TopBar({ fps, linkStatus, ecuV, cur, status }: TopBarProps) {
 
   return (
     <header className="panel flex items-center justify-between gap-3 rounded-lg px-3 py-1.5 short:py-1 md:px-4">
-      {/* brand logo (AL-AYED · ECU Tester) */}
+      {/* brand logo (AL-AYED · ECU Tester) — exact photo, no styling */}
       <div className="flex items-center">
         <img
           src={logoUrl}
           alt="AL-AYED · ECU Tester"
-          className="h-9 w-auto rounded-sm short:h-7 md:h-12"
-          style={{ boxShadow: "0 0 10px -3px rgba(0,231,242,0.5)" }}
+          className="h-10 w-auto short:h-8 md:h-14"
         />
       </div>
 
