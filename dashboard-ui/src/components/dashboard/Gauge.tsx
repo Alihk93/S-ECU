@@ -2,16 +2,16 @@ import { useMemo } from "react";
 import type { GaugeDef } from "@/lib/ecu";
 import { clamp } from "@/lib/sim";
 
-// v5 mini round gauge after the brushed-steel mockup: each sensor sits on its
-// own small black tile — a full-circle dial with a thin chrome bezel, dark
-// face, fine white ticks, an orange needle — with the white digital value and
-// the label beneath. Values unchanged: every sensor shown as its 0..5 V signal.
+// Compact half-circle sensor gauge after the "ECU Test Bench v4.0" mockup:
+// a segmented colored arc in the signal's colour (red past the warn threshold),
+// a red needle, the label on top and a digital readout below. All-SVG.
+// Values/labels unchanged — every sensor is shown as a 0..5 V signal.
 
-const START = 135; // deg — lower-left (min)
-const SWEEP = 270; // deg — clockwise to lower-right (max)
-const CX = 60;
-const CY = 60;
-const R = 44; // tick baseline radius
+const START = 180; // deg — left (min)
+const SWEEP = 180; // deg — over the top to the right (max)
+const CX = 100;
+const CY = 98;
+const R = 74; // arc baseline radius
 
 function polar(angleDeg: number, r: number) {
   const a = (angleDeg * Math.PI) / 180;
@@ -35,78 +35,60 @@ export function Gauge({ def, value }: GaugeProps) {
       ? clamp((def.warn - def.min) / (def.max - def.min), 0, 1)
       : 1;
 
-  const tip = polar(angle, R - 6);
-  const tail = polar(angle + 180, 10);
-  const hw = 2.4;
+  const tip = polar(angle, R - 12);
+  const hw = 3.2;
   const perp = { x: Math.cos(((angle + 90) * Math.PI) / 180), y: Math.sin(((angle + 90) * Math.PI) / 180) };
   const pL = { x: CX + hw * perp.x, y: CY + hw * perp.y };
   const pR = { x: CX - hw * perp.x, y: CY - hw * perp.y };
-  const needle = `${pL.x},${pL.y} ${tip.x},${tip.y} ${pR.x},${pR.y} ${tail.x},${tail.y}`;
+  const needle = `${pL.x},${pL.y} ${tip.x},${tip.y} ${pR.x},${pR.y}`;
 
-  const ticks = useMemo(() => {
-    const arr: { x1: number; y1: number; x2: number; y2: number; major: boolean; red: boolean }[] = [];
-    const N = 20;
-    for (let i = 0; i <= N; i++) {
-      const f = i / N;
+  const segs = useMemo(() => {
+    const arr: { x1: number; y1: number; x2: number; y2: number; red: boolean }[] = [];
+    const M = 32;
+    for (let i = 0; i <= M; i++) {
+      const f = i / M;
       const ang = START + f * SWEEP;
       const major = i % 4 === 0;
       const o = polar(ang, R);
-      const inn = polar(ang, major ? R - 8 : R - 4.5);
-      arr.push({ x1: o.x, y1: o.y, x2: inn.x, y2: inn.y, major, red: f >= warnT });
+      const inn = polar(ang, major ? R - 12 : R - 7);
+      arr.push({ x1: o.x, y1: o.y, x2: inn.x, y2: inn.y, red: f >= warnT });
     }
     return arr;
   }, [warnT]);
 
   return (
-    <div className="inset-screen flex h-full min-h-0 w-full flex-col items-center justify-center overflow-hidden rounded-md px-1 py-1">
-      <svg viewBox="0 0 120 152" preserveAspectRatio="xMidYMid meet" className="h-full w-full min-h-0">
+    <div className="flex h-full min-h-0 w-full flex-col items-center justify-center overflow-hidden">
+      <svg viewBox="0 0 200 128" preserveAspectRatio="xMidYMid meet" className="h-full max-h-[150px] w-full min-h-0">
         <defs>
-          <linearGradient id={`mg-chrome-${def.key}`} x1="0" y1="0" x2="0" y2="1">
-            <stop offset="0%" stopColor="#eef2f4" />
-            <stop offset="45%" stopColor="#848d94" />
-            <stop offset="100%" stopColor="#343b41" />
-          </linearGradient>
-          <radialGradient id={`mg-face-${def.key}`} cx="50%" cy="42%" r="72%">
-            <stop offset="0%" stopColor="#1b2a38" />
-            <stop offset="60%" stopColor="#0b141d" />
-            <stop offset="100%" stopColor="#04080c" />
-          </radialGradient>
-          <linearGradient id={`mg-needle-${def.key}`} x1="0" y1="0" x2="1" y2="1">
-            <stop offset="0%" stopColor="#ffcf7d" />
-            <stop offset="55%" stopColor="#ff9b1d" />
-            <stop offset="100%" stopColor="#d95f00" />
-          </linearGradient>
+          <filter id={`sg-glow-${def.key}`} x="-30%" y="-30%" width="160%" height="160%">
+            <feGaussianBlur stdDeviation="1.4" />
+          </filter>
         </defs>
 
-        {/* thin chrome bezel + dark face */}
-        <circle cx={CX} cy={CY} r={56} fill={`url(#mg-chrome-${def.key})`} stroke="#22282d" strokeWidth={1} />
-        <circle cx={CX} cy={CY} r={51.5} fill="#0a0f14" />
-        <circle cx={CX} cy={CY} r={50} fill={`url(#mg-face-${def.key})`} />
+        {/* label on top */}
+        <text x={CX} y={12} fill={hot ? "#ff5260" : def.color} fontSize="15" fontWeight="700" textAnchor="middle" letterSpacing="1.5" fontFamily="'Chakra Petch', sans-serif" style={{ filter: `url(#sg-glow-${def.key})` }}>
+          {def.label}
+        </text>
 
-        {/* ticks (red past warn) */}
-        {ticks.map((tk, i) => (
-          <line
-            key={i}
-            x1={tk.x1} y1={tk.y1} x2={tk.x2} y2={tk.y2}
-            stroke={tk.red ? "#ff5a45" : tk.major ? "#e8eef2" : "#77848e"}
-            strokeWidth={tk.major ? 1.7 : 0.8}
-          />
+        {/* segmented colored arc — bloom + crisp */}
+        <g filter={`url(#sg-glow-${def.key})`} opacity={0.65}>
+          {segs.map((s, i) => (
+            <line key={i} x1={s.x1} y1={s.y1} x2={s.x2} y2={s.y2} stroke={s.red ? "#ff2d3a" : def.color} strokeWidth={3.2} strokeLinecap="round" />
+          ))}
+        </g>
+        {segs.map((s, i) => (
+          <line key={i} x1={s.x1} y1={s.y1} x2={s.x2} y2={s.y2} stroke={s.red ? "#ff2d3a" : def.color} strokeWidth={2} strokeLinecap="round" />
         ))}
 
-        {/* glass highlight */}
-        <ellipse cx={CX - 7} cy={CY - 20} rx={28} ry={14} fill="#dceeff" opacity={0.06} />
+        {/* needle + hub */}
+        <polygon points={needle} fill="#ff3b3b" stroke="#7c0f14" strokeWidth={0.5} style={{ filter: "drop-shadow(0 0 3px rgba(255,45,58,0.7))" }} />
+        <circle cx={CX} cy={CY} r={7} fill="#0b1116" stroke="#8a95a0" strokeWidth={1.1} />
+        <circle cx={CX} cy={CY} r={2.4} fill="#ff3b3b" />
 
-        {/* orange needle + hub */}
-        <polygon points={needle} fill={`url(#mg-needle-${def.key})`} stroke="#9c4a00" strokeWidth={0.4} style={{ filter: "drop-shadow(0 0 2.5px rgba(255,155,29,0.65))" }} />
-        <circle cx={CX} cy={CY} r={5.5} fill="#11161b" stroke="#8a939a" strokeWidth={1} />
-        <circle cx={CX} cy={CY} r={2} fill="#ff9b1d" />
-
-        {/* digital value + label beneath the dial */}
-        <text x={CX} y={127} fill={hot ? "#ff5a45" : "#f2f7fa"} fontSize="21" fontWeight="700" textAnchor="middle" fontFamily="'JetBrains Mono', monospace">
+        {/* digital readout below */}
+        <text x={CX} y={122} fill={hot ? "#ff5260" : "#eaf4f9"} fontSize="20" fontWeight="700" textAnchor="middle" dominantBaseline="central" fontFamily="'JetBrains Mono', monospace">
           {volts.toFixed(2)}
-        </text>
-        <text x={CX} y={145} fill={hot ? "#ff5a45" : "#b8c3cc"} fontSize="13" fontWeight="700" textAnchor="middle" letterSpacing="2" fontFamily="'Chakra Petch', sans-serif">
-          {def.label}
+          <tspan fontSize="10" fill="#7fa6b8"> V</tspan>
         </text>
       </svg>
     </div>

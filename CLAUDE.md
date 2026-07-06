@@ -318,28 +318,6 @@ add `cl`/`in` 8-bit masks for real per-channel coil/injector sensing.
     `DriverBank.tsx` (accent-framed 4×2 part banks reusing `CoilIndicator`/`InjectorAnimation`).
   - Reference part photos (user-supplied) are treated as **references redrawn to SVG** — nothing
     raster embedded. `StatusCluster.tsx` + `PowerDisplay.tsx` are now dormant (unused).
-- **UPDATED (2026-07-06, "ECU TESTER · AL-AYED" v5 brushed-steel redesign):** full layout + skin
-  redesign to a new reference mockup — **frontend-only, all-SVG/CSS (no raster, constraint #4);
-  data contract + values untouched**. SUPERSEDES the v4.0 glossy-blue bench. Rebuilt/re-embedded
-  (`index.html.gz` ~333 KB) + regenerated demo/presentation. NOT yet flashed this pass.
-  - **Skin** (`index.css`): brushed stainless-steel bench — silver `.hud-backdrop`/`.metal-plate`
-    (1px brush lines, crisp at 4K), recessed `.inset-screen` black instrument screens,
-    `.screen-titlebar`, engraved `.metal-title`, dark `.bench-frame`; `.panel` aliased to the
-    inset-screen look.
-  - **Layout** (`App.tsx`): top strip (VOLTAGE seven-seg · dark-red "ECU TESTER ⚡ AL-AYED" +
-    red spark trace · CURRENT seven-seg · small LIVE/SIM+uptime chip) → left column (2×4
-    indicator keys ST/ETC/FPC/FAN1/FAN2/IMO+/IMO−/IAC · amber CKP/CMP scope · pale-green CAN
-    scope) → right metal panel "SENSOR GAUGES & RPM" (BAT/SWON/MRC± round lamps strip · chrome
-    navy speedometer + 2×3 mini dial tiles) → bottom dark strip "OUTPUT DRIVER BANKS"
-    (COIL amber / INJ blue / GDI red, numbered `BankCell`s + captions, HI-P in GDI header).
-  - **Per user decisions:** mini gauges keep the 0–5 V readouts; 6 gauges only; COUNTER (amp)
-    readout and MAIN ANALOG WAVE panel dropped (amp still streamed); link status kept as a
-    discreet chip. `HudPanel` gained a `variant="metal"|"screen"` prop; `StatusGrid.tsx` now
-    also exports `SystemLamps`; `DriverBank.tsx` exports `BankCell`; `CoilIndicator`/
-    `InjectorAnimation` render bare part art (cell chrome moved to `BankCell`).
-    `MainAnalogWave.tsx` is dormant. Part SVGs (coil / EV14 / GDI from user photos) unchanged.
-  - Verified in headless Chromium at 1440×820 and **3840×2160** (4K) — chrome bezel, tick work
-    and brush texture render crisp; all-vector, no raster.
 - **NOT YET TESTED:** on-device visual confirmation of the new layout; multi-client broadcast,
   gauge latency under load, pot→load mapping, every status bit — bench test pending.
 

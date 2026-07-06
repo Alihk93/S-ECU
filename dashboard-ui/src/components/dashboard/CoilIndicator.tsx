@@ -9,12 +9,15 @@ interface CoilIndicatorProps {
 // the wavy potting + red driver PCB, and a stepped chrome spark-plug boot.
 // Charging ramps the PCB glow with dwell; firing flashes the coil + plug tip.
 export function CoilIndicator({ index, dwell, spark }: CoilIndicatorProps) {
+  const charging = dwell > 0.02 && !spark;
   const glow = spark ? 1 : dwell;
   const halo = spark ? "#ffd23a" : "#ff2d3a";
   const pcb = spark ? "#ffe27a" : "#ff4d5a";
 
   return (
-    <div className="flex h-full min-h-0 w-full flex-col items-center">
+    <div className="panel flex h-full min-h-0 flex-col items-center gap-0.5 rounded-sm px-1 py-0.5 short:gap-0.5 short:px-1 short:py-0.5 md:gap-1 md:px-1.5 md:py-1.5">
+      <span className="font-data text-[9px] font-bold text-neon-amber">C{index + 1}</span>
+
       <div className="relative flex min-h-0 w-full flex-1 items-center justify-center">
         <svg
           viewBox="0 0 48 132"
@@ -123,6 +126,11 @@ export function CoilIndicator({ index, dwell, spark }: CoilIndicatorProps) {
             style={{ filter: spark ? "drop-shadow(0 0 5px #ffd23a)" : "none", transition: "filter 40ms linear" }}
           />
         </svg>
+      </div>
+
+      <div className="hidden w-full items-center justify-between px-0.5 short:hidden md:flex">
+        <span className="font-data text-[8px]" style={{ color: charging ? "#ff4d5a" : "#5b7387" }}>+</span>
+        <span className="font-data text-[8px]" style={{ color: spark ? "#ffb000" : "#5b7387" }}>−</span>
       </div>
     </div>
   );

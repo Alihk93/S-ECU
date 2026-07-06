@@ -2,29 +2,21 @@ import { useMemo } from "react";
 import { RANGES } from "@/lib/ecu";
 import { clamp } from "@/lib/sim";
 
-// v5 RPM gauge after the brushed-steel mockup: polished chrome ring bezel,
-// deep navy dished face, fine white tick work, orange sweep needle, "RPM
-// x1000" centre. Drawn dense (many segments/highlights) so it stays crisp and
-// detailed at 4K. Scale/values unchanged: 0–8 ×1000, 6500 redline; small
-// digital rpm + LOAD kept inside the lower face.
+// Glossy speedometer-style RPM gauge after the "ECU Test Bench v4.0" mockup:
+// brushed-silver bezel, black face, cyan tick ring + numerals, an orange sweep
+// needle and "RPM x1000" in the centre. All-SVG (no raster). Scale/values
+// unchanged: 0–8 ×1000, 6500 redline; RBM + LOAD readouts kept below.
 
 const START = 135; // deg — lower-left (0)
 const SWEEP = 270; // deg — clockwise to lower-right (max)
-const CX = 130;
-const CY = 130;
-const R = 96; // tick baseline radius
+const CX = 120;
+const CY = 120;
+const R = 92; // tick baseline radius
 const MAX_K = 8;
 
 function polar(angleDeg: number, r: number) {
   const a = (angleDeg * Math.PI) / 180;
   return { x: CX + r * Math.cos(a), y: CY + r * Math.sin(a) };
-}
-
-function arcPath(fromDeg: number, toDeg: number, r: number) {
-  const s = polar(fromDeg, r);
-  const e = polar(toDeg, r);
-  const large = toDeg - fromDeg > 180 ? 1 : 0;
-  return `M ${s.x} ${s.y} A ${r} ${r} 0 ${large} 1 ${e.x} ${e.y}`;
 }
 
 interface TachometerProps {
@@ -40,35 +32,33 @@ export function Tachometer({ rpm, load }: TachometerProps) {
   const redlineT = RANGES.rpm.redline / maxRpm;
   const loadPct = Math.round(clamp(load, 0, 1) * 100);
 
-  const tip = polar(angle, R - 4);
-  const tail = polar(angle + 180, 26);
-  const hw = 5;
+  const tip = polar(angle, R - 6);
+  const tail = polar(angle + 180, 24);
+  const hw = 4.6;
   const perp = { x: Math.cos(((angle + 90) * Math.PI) / 180), y: Math.sin(((angle + 90) * Math.PI) / 180) };
   const pL = { x: CX + hw * perp.x, y: CY + hw * perp.y };
   const pR = { x: CX - hw * perp.x, y: CY - hw * perp.y };
   const needle = `${pL.x},${pL.y} ${tip.x},${tip.y} ${pR.x},${pR.y} ${tail.x},${tail.y}`;
 
-  // dense fine ticks: minor every 100 rpm, majors every 1000 — 4K detail
   const ticks = useMemo(() => {
     const arr: {
       x1: number; y1: number; x2: number; y2: number;
-      kind: "major" | "half" | "minor"; red: boolean;
-      lx?: number; ly?: number; label?: string;
+      major: boolean; red: boolean; lx?: number; ly?: number; label?: string;
     }[] = [];
-    const N = MAX_K * 10;
+    const N = MAX_K * 2;
     for (let i = 0; i <= N; i++) {
       const f = i / N;
       const ang = START + f * SWEEP;
-      const kind = i % 10 === 0 ? "major" : i % 5 === 0 ? "half" : "minor";
+      const major = i % 2 === 0;
       const red = f >= redlineT;
       const outer = polar(ang, R);
-      const inner = polar(ang, kind === "major" ? R - 14 : kind === "half" ? R - 9 : R - 5);
-      const tk: (typeof arr)[number] = { x1: outer.x, y1: outer.y, x2: inner.x, y2: inner.y, kind, red };
-      if (kind === "major") {
-        const lp = polar(ang, R - 27);
+      const inner = polar(ang, major ? R - 13 : R - 7);
+      const tk: (typeof arr)[number] = { x1: outer.x, y1: outer.y, x2: inner.x, y2: inner.y, major, red };
+      if (major) {
+        const lp = polar(ang, R - 26);
         tk.lx = lp.x;
         tk.ly = lp.y;
-        tk.label = String(i / 10);
+        tk.label = String(i / 2);
       }
       arr.push(tk);
     }
@@ -77,103 +67,101 @@ export function Tachometer({ rpm, load }: TachometerProps) {
 
   return (
     <div className="flex h-full min-h-0 w-full flex-col items-center justify-center overflow-hidden">
-      <svg viewBox="0 0 260 260" preserveAspectRatio="xMidYMid meet" className="h-full max-h-[420px] w-full min-h-0">
+      <svg viewBox="0 0 240 240" preserveAspectRatio="xMidYMid meet" className="h-full max-h-[360px] w-full min-h-0">
         <defs>
-          {/* polished chrome ring */}
-          <linearGradient id="spd-chrome" x1="0" y1="0" x2="0" y2="1">
-            <stop offset="0%" stopColor="#f5f8fa" />
-            <stop offset="22%" stopColor="#c3cad0" />
-            <stop offset="46%" stopColor="#6f7880" />
-            <stop offset="50%" stopColor="#666e75" />
-            <stop offset="72%" stopColor="#b7bfc5" />
-            <stop offset="100%" stopColor="#3f474e" />
-          </linearGradient>
-          <linearGradient id="spd-chrome-in" x1="0" y1="1" x2="0" y2="0">
-            <stop offset="0%" stopColor="#e9edef" />
-            <stop offset="45%" stopColor="#8b939a" />
-            <stop offset="100%" stopColor="#20262b" />
-          </linearGradient>
-          {/* deep navy dished face */}
-          <radialGradient id="spd-face" cx="50%" cy="40%" r="75%">
-            <stop offset="0%" stopColor="#274a70" />
-            <stop offset="45%" stopColor="#132c4a" />
-            <stop offset="80%" stopColor="#081527" />
-            <stop offset="100%" stopColor="#040b16" />
+          <radialGradient id="spd-face" cx="50%" cy="42%" r="72%">
+            <stop offset="0%" stopColor="#0d3247" />
+            <stop offset="52%" stopColor="#061826" />
+            <stop offset="100%" stopColor="#010a12" />
           </radialGradient>
+          <linearGradient id="spd-bezel" x1="0" y1="0" x2="0" y2="1">
+            <stop offset="0%" stopColor="#dfe6ec" />
+            <stop offset="18%" stopColor="#9aa6b1" />
+            <stop offset="50%" stopColor="#59636d" />
+            <stop offset="82%" stopColor="#aab4bd" />
+            <stop offset="100%" stopColor="#2f373f" />
+          </linearGradient>
+          <linearGradient id="spd-bezel2" x1="0" y1="0" x2="0" y2="1">
+            <stop offset="0%" stopColor="#2c343c" />
+            <stop offset="50%" stopColor="#0b1016" />
+            <stop offset="100%" stopColor="#3a444d" />
+          </linearGradient>
           <linearGradient id="spd-needle" x1="0" y1="0" x2="1" y2="1">
-            <stop offset="0%" stopColor="#ffcf7d" />
-            <stop offset="50%" stopColor="#ff9b1d" />
-            <stop offset="100%" stopColor="#d95f00" />
+            <stop offset="0%" stopColor="#ffd07a" />
+            <stop offset="55%" stopColor="#ff9d00" />
+            <stop offset="100%" stopColor="#d15e00" />
           </linearGradient>
           <filter id="spd-glow" x="-40%" y="-40%" width="180%" height="180%">
-            <feGaussianBlur stdDeviation="2" result="b" />
+            <feGaussianBlur stdDeviation="2.2" result="b" />
             <feMerge><feMergeNode in="b" /><feMergeNode in="SourceGraphic" /></feMerge>
+          </filter>
+          <filter id="spd-ring" x="-30%" y="-30%" width="160%" height="160%">
+            <feGaussianBlur stdDeviation="1.2" />
           </filter>
         </defs>
 
-        {/* chrome bezel: outer ring, mid groove, inner ring */}
-        <circle cx={CX} cy={CY} r={126} fill="url(#spd-chrome)" stroke="#2b3238" strokeWidth={1.5} />
-        <circle cx={CX} cy={CY} r={117} fill="url(#spd-chrome-in)" />
-        <circle cx={CX} cy={CY} r={110} fill="#0c1420" />
-        {/* dished navy face */}
-        <circle cx={CX} cy={CY} r={107} fill="url(#spd-face)" />
-        {/* bezel specular highlights */}
-        <path d={arcPath(200, 250, 121.5)} stroke="rgba(255,255,255,0.85)" strokeWidth={2.4} fill="none" strokeLinecap="round" opacity={0.8} />
-        <path d={arcPath(20, 60, 121.5)} stroke="rgba(255,255,255,0.5)" strokeWidth={1.8} fill="none" strokeLinecap="round" opacity={0.6} />
+        {/* brushed-silver bezel rings + dished black face */}
+        <circle cx={CX} cy={CY} r={118} fill="url(#spd-bezel)" />
+        <circle cx={CX} cy={CY} r={109} fill="url(#spd-bezel2)" />
+        <circle cx={CX} cy={CY} r={104} fill="url(#spd-face)" stroke="#0a1a26" strokeWidth={1} />
 
-        {/* redline arc */}
-        <path d={arcPath(START + redlineT * SWEEP, START + SWEEP, R + 1)} fill="none" stroke="#e33b2e" strokeWidth={5} opacity={0.95} />
-
-        {/* fine tick work */}
+        {/* cyan minor tick ring (bloom + crisp) */}
+        <g filter="url(#spd-ring)" opacity={0.6}>
+          {ticks.map((tk, i) => (
+            <line key={i} x1={tk.x1} y1={tk.y1} x2={tk.x2} y2={tk.y2} stroke={tk.red ? "#ff7a18" : "#26c9e8"} strokeWidth={tk.major ? 3 : 1.6} strokeLinecap="round" />
+          ))}
+        </g>
         {ticks.map((tk, i) => (
           <g key={i}>
-            <line
-              x1={tk.x1} y1={tk.y1} x2={tk.x2} y2={tk.y2}
-              stroke={tk.red ? "#ff6a55" : tk.kind === "major" ? "#f2f7fa" : tk.kind === "half" ? "#b9c6d0" : "#7d8c99"}
-              strokeWidth={tk.kind === "major" ? 2.4 : tk.kind === "half" ? 1.4 : 0.7}
-            />
+            <line x1={tk.x1} y1={tk.y1} x2={tk.x2} y2={tk.y2} stroke={tk.red ? "#ff9d3c" : tk.major ? "#7fe9ff" : "#3aa6c4"} strokeWidth={tk.major ? 2 : 1} />
             {tk.label && (
-              <text
-                x={tk.lx} y={tk.ly}
-                fill={tk.red ? "#ff6a55" : "#eef4f8"}
-                fontSize="17" fontWeight="700"
-                textAnchor="middle" dominantBaseline="central"
-                fontFamily="'Chakra Petch', sans-serif"
-              >
+              <text x={tk.lx} y={tk.ly} fill={tk.red ? "#ff9d3c" : "#69e0ff"} fontSize="16" fontWeight="700" textAnchor="middle" dominantBaseline="central" fontFamily="'JetBrains Mono', monospace">
                 {tk.label}
               </text>
             )}
           </g>
         ))}
 
-        {/* centre legend */}
-        <text x={CX} y={CY + 40} fill="#e8f0f6" fontSize="19" fontWeight="800" textAnchor="middle" fontFamily="'Chakra Petch', sans-serif" letterSpacing="1.5">
+        {/* centre labels */}
+        <text x={CX} y={CY + 38} fill={over ? "#ff2d55" : "#39d6f2"} fontSize="20" fontWeight="800" textAnchor="middle" fontFamily="'Chakra Petch', sans-serif" letterSpacing="1" style={{ filter: "url(#spd-glow)" }}>
           RPM
         </text>
-        <text x={CX} y={CY + 55} fill="#9fb4c6" fontSize="10.5" textAnchor="middle" fontFamily="'Chakra Petch', sans-serif" letterSpacing="2">
+        <text x={CX} y={CY + 54} fill="#7fd9ea" fontSize="11" textAnchor="middle" fontFamily="'Chakra Petch', sans-serif" letterSpacing="2">
           x1000
         </text>
-        {/* live digital rpm + load kept inside the lower face (values preserved) */}
-        <text x={CX} y={CY + 76} fill={over ? "#ff5540" : "#cfe0ec"} fontSize="13" fontWeight="700" textAnchor="middle" fontFamily="'JetBrains Mono', monospace">
-          {Math.round(rpm).toString().padStart(4, "0")}
-        </text>
-        <text x={CX} y={CY + 89} fill="#8fa4b5" fontSize="8.5" textAnchor="middle" fontFamily="'JetBrains Mono', monospace" letterSpacing="1">
-          RBM · LOAD {loadPct}%
-        </text>
-        <text x={CX} y={CY - 34} fill="#7d94a8" fontSize="8.5" textAnchor="middle" fontFamily="'Chakra Petch', sans-serif" letterSpacing="2.5">
+        <text x={CX} y={CY + 78} fill="#5aa9c2" fontSize="8.5" textAnchor="middle" fontFamily="'Chakra Petch', sans-serif" letterSpacing="1.5">
           AL-AYED
         </text>
 
-        {/* glass reflections */}
-        <ellipse cx={CX - 14} cy={CY - 52} rx={64} ry={30} fill="#dceeff" opacity={0.055} />
-        <ellipse cx={CX + 34} cy={CY + 58} rx={40} ry={18} fill="#dceeff" opacity={0.03} />
+        {/* glass reflection */}
+        <ellipse cx={CX} cy={CY - 44} rx={70} ry={38} fill="#bfe9ff" opacity={0.05} />
 
-        {/* orange needle + chrome hub */}
-        <polygon points={needle} fill="url(#spd-needle)" stroke="#9c4a00" strokeWidth={0.6} filter="url(#spd-glow)" />
-        <circle cx={CX} cy={CY} r={14} fill="url(#spd-chrome-in)" stroke="#3f474e" strokeWidth={1.4} />
-        <circle cx={CX} cy={CY} r={7.5} fill="#11161b" />
-        <circle cx={CX} cy={CY} r={3.4} fill="#ff9b1d" />
+        {/* orange needle + hub */}
+        <polygon points={needle} fill="url(#spd-needle)" stroke="#8a3d00" strokeWidth={0.6} filter="url(#spd-glow)" />
+        <circle cx={CX} cy={CY} r={12} fill="url(#spd-bezel2)" stroke="#8a95a0" strokeWidth={1.4} />
+        <circle cx={CX} cy={CY} r={5} fill="#ff9d00" />
       </svg>
+
+      <div className="-mt-3 flex items-end gap-6 short:-mt-2 md:-mt-4">
+        <div className="flex flex-col items-center">
+          <div
+            className="font-data font-bold leading-none text-[30px] short:text-[24px] md:text-[38px]"
+            style={{ color: over ? "#ff2d55" : "#e8f2f8", textShadow: over ? "0 0 18px #ff2d55" : "0 0 14px rgba(120,200,235,0.45)" }}
+          >
+            {Math.round(rpm).toString().padStart(4, "0")}
+          </div>
+          <div className="mt-0.5 font-display text-[10px] uppercase tracking-hud text-muted-foreground">
+            RBM {over && <span className="text-neon-red">· SHIFT</span>}
+          </div>
+        </div>
+        <div className="flex flex-col items-center">
+          <div className="font-data text-[18px] font-bold leading-none md:text-[22px]" style={{ color: "#ff9d3c", textShadow: "0 0 12px rgba(255,157,0,0.5)" }}>
+            {loadPct}
+            <span className="text-[11px]">%</span>
+          </div>
+          <div className="mt-0.5 font-display text-[10px] uppercase tracking-hud text-muted-foreground">LOAD</div>
+        </div>
+      </div>
     </div>
   );
 }

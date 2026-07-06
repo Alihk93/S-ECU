@@ -48,8 +48,8 @@ export function CanScope({ active = true }: CanScopeProps) {
     ro.observe(wrap);
 
     const LANES = [
-      { label: "CAN HI", color: "#9fe6a0", dir: -1 },
-      { label: "CAN LO", color: "#63d47c", dir: 1 },
+      { label: "CAN HI", color: "#00e7f2", dir: -1 },
+      { label: "CAN LO", color: "#ffb000", dir: 1 },
     ];
 
     const draw = (now: number) => {
