@@ -8,7 +8,6 @@ interface TopBarProps {
   linkStatus: LinkStatus;
   ecuV: number;
   cur: number;
-  amp: number;
   status: Record<StatusKey, number>;
 }
 
@@ -23,17 +22,6 @@ function fmt(v: number, intDigits: number, dec: number) {
   const [whole] = s.split(".");
   return "0".repeat(Math.max(0, intDigits - whole.length)) + s;
 }
-// dotted "8.8.8" three-digit LED look
-function dotted3(v: number) {
-  const cl = Math.max(0, v);
-  let d: string;
-  if (cl >= 100) d = String(Math.min(999, Math.round(cl)));
-  else if (cl >= 10) d = (Math.round(cl * 10) / 10).toFixed(1).replace(".", "");
-  else d = cl.toFixed(2).replace(".", "");
-  d = d.padStart(3, "0").slice(0, 3);
-  return d.split("").map((c) => `${c}.`).join("");
-}
-
 function fmtElapsed(ms: number) {
   const total = Math.floor(ms / 1000);
   const h = Math.floor(total / 3600);
@@ -42,7 +30,7 @@ function fmtElapsed(ms: number) {
   return [h, m, s].map((n) => String(n).padStart(2, "0")).join(":");
 }
 
-export function TopBar({ fps, linkStatus, ecuV, cur, amp, status }: TopBarProps) {
+export function TopBar({ fps, linkStatus, ecuV, cur, status }: TopBarProps) {
   const connectedAtRef = useRef<number | null>(null);
   const [uptime, setUptime] = useState("00:00:00");
 
@@ -82,9 +70,6 @@ export function TopBar({ fps, linkStatus, ecuV, cur, amp, status }: TopBarProps)
         </SegBox>
         <SegBox label="CURRENT" unit="A" color="#ff9d00">
           <SevenSegDisplay value={fmt(cur, 2, 2)} color="#ff9d00" className="h-[26px] w-full" />
-        </SegBox>
-        <SegBox label="COUNTER" color="#2bff88">
-          <SevenSegDisplay value={dotted3(amp)} color="#37d97a" className="h-[26px] w-full" />
         </SegBox>
       </div>
 

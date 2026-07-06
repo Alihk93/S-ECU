@@ -5,7 +5,6 @@ import { DriverBank } from "@/components/dashboard/DriverBank";
 import { Gauge } from "@/components/dashboard/Gauge";
 import { HudPanel } from "@/components/dashboard/HudPanel";
 import { HpPumpArt, InjectorAnimation } from "@/components/dashboard/InjectorAnimation";
-import { MainAnalogWave } from "@/components/dashboard/MainAnalogWave";
 import { StatusGrid } from "@/components/dashboard/StatusGrid";
 import { Tachometer } from "@/components/dashboard/Tachometer";
 import { TopBar } from "@/components/dashboard/TopBar";
@@ -35,7 +34,7 @@ export default function App() {
   return (
     <div className="bench-frame h-dvh w-full overflow-hidden">
       <div className="hud-backdrop scanlines relative flex h-full w-full flex-col gap-1.5 overflow-hidden rounded-[1.05rem] p-1.5 text-foreground md:gap-2 md:p-2">
-        <TopBar fps={fps} linkStatus={link.status} ecuV={state.ecuV} cur={state.cur} amp={state.amp} status={state.status} />
+        <TopBar fps={fps} linkStatus={link.status} ecuV={state.ecuV} cur={state.cur} status={state.status} />
 
         <main className="flex min-h-0 flex-1 flex-col gap-1.5 overflow-hidden md:gap-2">
           {/* ───── middle band: oscilloscope/CAN (left) · gauges+RPM + indicators (right) ───── */}
@@ -47,10 +46,7 @@ export default function App() {
               className="flex min-h-0 flex-col"
               bodyClassName="flex min-h-0 flex-1 flex-col gap-1.5 md:gap-2"
             >
-              <ScopeBlock label="Main Analog Wave" className="flex-1">
-                <MainAnalogWave rpmRef={rpmRef} />
-              </ScopeBlock>
-              <ScopeBlock label="Digital CKP / CMP Pulse (CKP, CMP1, CMP2)" className="flex-[1.5]">
+              <ScopeBlock label="Digital CKP / CMP Pulse (CKP, CMP1, CMP2)" className="flex-[1.6]">
                 <WaveformScope phaseRef={phaseRef} rpmRef={rpmRef} cmpRef={cmpRef} cmpPhaseRef={cmpPhaseRef} />
               </ScopeBlock>
               <ScopeBlock label="CAN Bus (CAN HI / CAN LO)" className="flex-1">
@@ -67,7 +63,7 @@ export default function App() {
                 bodyClassName="grid min-h-0 flex-1 grid-cols-[1.15fr_1fr] gap-1.5 md:gap-2"
               >
                 <div className="flex min-h-0 items-center justify-center">
-                  <Tachometer rpm={state.rpm} load={state.load} />
+                  <Tachometer rpm={state.rpm} />
                 </div>
                 <div className="grid min-h-0 grid-cols-2 grid-rows-3 gap-1 md:gap-1.5">
                   {GAUGES.map((g) => (

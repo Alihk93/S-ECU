@@ -21,16 +21,14 @@ function polar(angleDeg: number, r: number) {
 
 interface TachometerProps {
   rpm: number;
-  load: number; // 0..1
 }
 
-export function Tachometer({ rpm, load }: TachometerProps) {
+export function Tachometer({ rpm }: TachometerProps) {
   const maxRpm = MAX_K * 1000;
   const t = clamp(rpm / maxRpm, 0, 1);
   const angle = START + t * SWEEP;
   const over = rpm >= RANGES.rpm.redline;
   const redlineT = RANGES.rpm.redline / maxRpm;
-  const loadPct = Math.round(clamp(load, 0, 1) * 100);
 
   const tip = polar(angle, R - 6);
   const tail = polar(angle + 180, 24);
@@ -142,24 +140,15 @@ export function Tachometer({ rpm, load }: TachometerProps) {
         <circle cx={CX} cy={CY} r={5} fill="#ff9d00" />
       </svg>
 
-      <div className="-mt-3 flex items-end gap-6 short:-mt-2 md:-mt-4">
-        <div className="flex flex-col items-center">
-          <div
-            className="font-data font-bold leading-none text-[30px] short:text-[24px] md:text-[38px]"
-            style={{ color: over ? "#ff2d55" : "#e8f2f8", textShadow: over ? "0 0 18px #ff2d55" : "0 0 14px rgba(120,200,235,0.45)" }}
-          >
-            {Math.round(rpm).toString().padStart(4, "0")}
-          </div>
-          <div className="mt-0.5 font-display text-[10px] uppercase tracking-hud text-muted-foreground">
-            RBM {over && <span className="text-neon-red">· SHIFT</span>}
-          </div>
+      <div className="-mt-3 flex flex-col items-center short:-mt-2 md:-mt-4">
+        <div
+          className="font-data font-bold leading-none text-[30px] short:text-[24px] md:text-[38px]"
+          style={{ color: over ? "#ff2d55" : "#e8f2f8", textShadow: over ? "0 0 18px #ff2d55" : "0 0 14px rgba(120,200,235,0.45)" }}
+        >
+          {Math.round(rpm).toString().padStart(4, "0")}
         </div>
-        <div className="flex flex-col items-center">
-          <div className="font-data text-[18px] font-bold leading-none md:text-[22px]" style={{ color: "#ff9d3c", textShadow: "0 0 12px rgba(255,157,0,0.5)" }}>
-            {loadPct}
-            <span className="text-[11px]">%</span>
-          </div>
-          <div className="mt-0.5 font-display text-[10px] uppercase tracking-hud text-muted-foreground">LOAD</div>
+        <div className="mt-0.5 font-display text-[10px] uppercase tracking-hud text-muted-foreground">
+          RBM {over && <span className="text-neon-red">· SHIFT</span>}
         </div>
       </div>
     </div>
