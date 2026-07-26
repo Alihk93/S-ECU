@@ -324,3 +324,13 @@ add `cl`/`in` 8-bit masks for real per-channel coil/injector sensing.
 - New signals (`cts/igf/cur/amp/hip`) are streamed; CAN HI/LO and GDI injectors are derived
   browser-side. Streaming a real 500 kbit/s CAN bus over the 30 Hz link is impractical, so the
   CAN scope animates a representative recessive/dominant frame from `rpm` activity instead.
+
+
+---
+
+## Firm automation (TON by Swiss)
+Dashboard auto-syncs git commits (no manual import — pm-sync.json is retired):
+@CLAUDE-md-sync-block.md
+
+## Model picker
+@model-picker.md
