@@ -48,8 +48,8 @@ export function CanScope({ active = true }: CanScopeProps) {
     ro.observe(wrap);
 
     const LANES = [
-      { label: "CAN HI", color: "#00e7f2", dir: -1 },
-      { label: "CAN LO", color: "#ffb000", dir: 1 },
+      { label: "CAN HI", color: "#22d3ee", dir: -1 },
+      { label: "CAN LO", color: "#fbbf24", dir: 1 },
     ];
 
     const draw = (now: number) => {
@@ -57,12 +57,12 @@ export function CanScope({ active = true }: CanScopeProps) {
       const laneH = H / 2;
 
       ctx.clearRect(0, 0, W, H);
-      ctx.fillStyle = "#04080b";
+      ctx.fillStyle = "#07131f";
       ctx.fillRect(0, 0, W, H);
 
       // grid
       ctx.lineWidth = 1;
-      ctx.strokeStyle = "rgba(45,110,130,0.16)";
+      ctx.strokeStyle = "rgba(90,140,190,0.13)";
       ctx.beginPath();
       for (let i = 0; i <= 24; i++) {
         const x = (i / 24) * W;
@@ -125,7 +125,7 @@ export function CanScope({ active = true }: CanScopeProps) {
   return (
     <div
       ref={wrapRef}
-      className="scanlines relative h-full min-h-0 w-full overflow-hidden rounded-sm border border-border"
+      className="relative h-full min-h-0 w-full overflow-hidden rounded-md border border-border"
     >
       <canvas ref={canvasRef} className="block h-full w-full" />
     </div>

@@ -10,9 +10,9 @@ interface ScopeProps {
 }
 
 const LANES = [
-  { key: "ckp", label: "CKP", color: "#00e7f2", fn: (a: number) => ckpSample(a) },
-  { key: "cmp1", label: "CMP1", color: "#ff36c8", fn: null },
-  { key: "cmp2", label: "CMP2", color: "#2bff88", fn: null },
+  { key: "ckp", label: "CKP", color: "#22d3ee", fn: (a: number) => ckpSample(a) },
+  { key: "cmp1", label: "CMP1", color: "#e879f9", fn: null },
+  { key: "cmp2", label: "CMP2", color: "#34d399", fn: null },
 ] as const;
 
 export function WaveformScope({
@@ -60,12 +60,12 @@ export function WaveformScope({
 
       // backdrop
       ctx.clearRect(0, 0, W, H);
-      ctx.fillStyle = "#04080b";
+      ctx.fillStyle = "#07131f";
       ctx.fillRect(0, 0, W, H);
 
       // grid
       ctx.lineWidth = 1;
-      ctx.strokeStyle = "rgba(45,110,130,0.16)";
+      ctx.strokeStyle = "rgba(90,140,190,0.13)";
       ctx.beginPath();
       const cols = 24;
       for (let i = 0; i <= cols; i++) {
@@ -121,7 +121,7 @@ export function WaveformScope({
       });
 
       // sweep head
-      ctx.fillStyle = "rgba(0,231,242,0.9)";
+      ctx.fillStyle = "rgba(34,211,238,0.9)";
       ctx.fillRect(W - 1.5, 0, 1.5, H);
 
       if (now - lastReadout > 120) {
@@ -164,7 +164,7 @@ export function WaveformScope({
       </div>
       <div
         ref={wrapRef}
-        className="scanlines relative min-h-0 flex-1 overflow-hidden rounded-sm border border-border fit:min-h-[200px]"
+        className="relative min-h-0 flex-1 overflow-hidden rounded-md border border-border fit:min-h-[200px]"
       >
         <canvas ref={canvasRef} className="block h-full w-full" />
       </div>
