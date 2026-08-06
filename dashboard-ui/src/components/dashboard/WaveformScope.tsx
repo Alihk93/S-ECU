@@ -10,9 +10,9 @@ interface ScopeProps {
 }
 
 const LANES = [
-  { key: "ckp", label: "CKP", color: "#00e7f2", fn: (a: number) => ckpSample(a) },
-  { key: "cmp1", label: "CMP1", color: "#ff36c8", fn: null },
-  { key: "cmp2", label: "CMP2", color: "#2bff88", fn: null },
+  { key: "ckp", label: "CKP", color: "#ff9d00", fn: (a: number) => ckpSample(a) },
+  { key: "cmp1", label: "CMP1", color: "#ffb733", fn: null },
+  { key: "cmp2", label: "CMP2", color: "#ff7a18", fn: null },
 ] as const;
 
 export function WaveformScope({
@@ -121,7 +121,7 @@ export function WaveformScope({
       });
 
       // sweep head
-      ctx.fillStyle = "rgba(0,231,242,0.9)";
+      ctx.fillStyle = "rgba(255,157,0,0.9)";
       ctx.fillRect(W - 1.5, 0, 1.5, H);
 
       if (now - lastReadout > 120) {
@@ -145,10 +145,10 @@ export function WaveformScope({
       <div className="mb-2 hidden items-center justify-between short:hidden md:flex">
         <div className="flex items-center gap-3 font-data text-[10px] text-muted-foreground">
           <span>
-            <span className="text-neon-cyan">CKP</span> 60-2
+            <span style={{ color: "#ff9d00" }}>CKP</span> 60-2
           </span>
-          <span className="text-neon-magenta">CMP1</span>
-          <span className="text-neon-green">CMP2</span>
+          <span style={{ color: "#ffb733" }}>CMP1</span>
+          <span style={{ color: "#ff7a18" }}>CMP2</span>
         </div>
         <div className="flex items-center gap-3 font-data text-[10px]">
           <span className="text-muted-foreground">
