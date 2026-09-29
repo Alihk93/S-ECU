@@ -187,6 +187,12 @@ Exit code 0 = clean, 5 = violations. A non-zero exit is a BLOCKER. If a
 violation is genuinely acceptable, it is **excluded in the project with a
 written reason** — never ignored silently.
 
+The same principle covers the house rules: only Ali can waive one, per board,
+in `house-rules-waivers.yaml` beside the schematic — the rule, the exact refs
+(no wildcards), the reason, `ruled_by` and `date`. `check_ali_rules.py` then
+prints those findings as `WAIVED` instead of `ERROR`, refuses a waiver missing
+any field, and flags a waiver that no longer matches anything.
+
 ## 20. Schematic ↔ PCB parity before any layout review — *CLI*
 
 ```
